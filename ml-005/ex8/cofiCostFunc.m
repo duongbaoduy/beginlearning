@@ -40,20 +40,15 @@ Theta_grad = zeros(size(Theta));
 %                     partial derivatives w.r.t. to each element of Theta
 %
 
+J = 0.5 * sum(sum( R.* ((X * Theta' - Y).^2) )) + 0.5 * lambda * sum(sum(X.^2)) + 0.5 * lambda * sum(sum(Theta.^2));
+val = X * Theta' - Y;
 
+% size(val) = 5 4     number_movie x number_user
+% size(X) = 5 3       number_movie x number_feature
+% size(Theta) = 4 3   number_user  x number_feature
 
-
-
-
-
-
-
-
-
-
-
-
-
+X_grad = R.*val * Theta + lambda * X;
+Theta_grad = R'.*val' * X + lambda * Theta;
 
 % =============================================================
 
