@@ -81,8 +81,8 @@ for i=1:m
     
     Theta1_grad = Theta1_grad + delta2 * a1';
     Theta2_grad = Theta2_grad + delta3 * a2';
-
 end
+
 J = sum( sum( ...
         -1 * yy .* log(aout) - (1 - yy).*log(1-aout) ...
     )) / m;
