@@ -27,6 +27,22 @@ function [f,g] = softmax_regression(theta, X,y)
   %        Before returning g, make sure you form it back into a vector with g=g(:);
   %
 %%% YOUR CODE HERE %%%
+  %  首先将y转换为0,1值, 重新调整Theta
+  yy = zeros(m, num_classes);
+  I=sub2ind(size(yy), 1:size(yy,1), y);
+  yy(I) = 1;
+  theta(:, num_classes) = 0;
+  g(:, num_classes) = 0;
+
+  hvalue = exp(X'*theta);
+  allSum = 1./sum(hvalue');
+  allSum = repmat(allSum, 10, 1);
+  hvalue = hvalue .* allSum';
+
+  f = -1 * sum( sum(log(hvalue).*yy));
+  g = -1 * X * (yy - hvalue);
   
+  g = g(:, 1:num_classes-1);
+%%% END OF YOUR CODE %%%
   g=g(:); % make gradient a vector for minFunc
 
