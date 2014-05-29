@@ -7,5 +7,8 @@ Beginlearning
 
 2. ufldl
     http://ufldl.stanford.edu/tutorial/
-    http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial
     Programing exercises for Deep Learning Tutorial
+
+3. ufldl2
+    http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial
+
