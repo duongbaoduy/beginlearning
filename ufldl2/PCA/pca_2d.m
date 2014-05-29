@@ -19,12 +19,8 @@ title('Raw data');
 %  sigma. 
 
 % -------------------- YOUR CODE HERE -------------------- 
-u = zeros(size(x, 1)); % You need to compute this
-avg = mean(mean(x));
-x = x - repmat(avg, size(x, 1), size(x,2));
-sigma = x * x' / (size(x, 2) * size(x,1));
-[u,S,v] = svd(sigma);
-
+sigma = x * x' / size(x, 2);
+[U, S, V] = svd(sigma);
 
 % -------------------------------------------------------- 
 hold on
@@ -39,8 +35,7 @@ hold off
 %  by U. Visualize the points by performing a scatter plot.
 
 % -------------------- YOUR CODE HERE -------------------- 
-xRot = zeros(size(x)); % You need to compute this
-xRot = u'*x;
+xRot = U' * x;  
 
 % -------------------------------------------------------- 
 
@@ -58,11 +53,8 @@ title('xRot');
 
 % -------------------- YOUR CODE HERE -------------------- 
 k = 1; % Use k = 1 and project the data onto the first eigenbasis
-xHat = zeros(size(x)); % You need to compute this
-u1 = u(:,1:k);
-xHat = u1' * x;
-xHat(2,:) = 0;
-xHat = u * xHat;
+xRot = U(:,1:k)' * x;
+xHat = U(:,1:k) * xRot;
 
 % -------------------------------------------------------- 
 figure(3);
@@ -76,9 +68,7 @@ title('xHat');
 
 epsilon = 1e-5;
 % -------------------- YOUR CODE HERE -------------------- 
-xPCAWhite = zeros(size(x)); % You need to compute this
-xPCAWhite = diag(1./sqrt(diag(S) + epsilon)) * u' * x;
-
+xPCAWhite = diag(1 ./ sqrt(diag(S) + epsilon)) * U' * x;
 
 % -------------------------------------------------------- 
 figure(4);
@@ -90,8 +80,7 @@ title('xPCAWhite');
 %  Complute xZCAWhite and plot the results.
 
 % -------------------- YOUR CODE HERE -------------------- 
-xZCAWhite = zeros(size(x)); % You need to compute this
-xZCAWhite = u * diag(1./sqrt(diag(S) + epsilon)) * u' * x;
+xZCAWhite = U * xPCAWhite;
 
 % -------------------------------------------------------- 
 figure(5);
