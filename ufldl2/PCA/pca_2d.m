@@ -20,9 +20,9 @@ title('Raw data');
 
 % -------------------- YOUR CODE HERE -------------------- 
 u = zeros(size(x, 1)); % You need to compute this
-avg = mean(x, 1);
-x = x - repmat(avg, size(x, 1), 1);
-sigma = x * x' / size(x, 2);
+avg = mean(mean(x));
+x = x - repmat(avg, size(x, 1), size(x,2));
+sigma = x * x' / (size(x, 2) * size(x,1));
 [u,S,v] = svd(sigma);
 
 
@@ -60,8 +60,9 @@ title('xRot');
 k = 1; % Use k = 1 and project the data onto the first eigenbasis
 xHat = zeros(size(x)); % You need to compute this
 u1 = u(:,1:k);
-xHat(1,:) = u1' * x;
+xHat = u1' * x;
 xHat(2,:) = 0;
+xHat = u * xHat;
 
 % -------------------------------------------------------- 
 figure(3);
