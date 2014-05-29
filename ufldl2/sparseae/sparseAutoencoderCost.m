@@ -42,23 +42,34 @@ b2grad = zeros(size(b2));
 % the gradient descent update to W1 would be W1 := W1 - alpha * W1grad, and similarly for W2, b1, b2. 
 % 
 
+mm=size(data,2);
 
+m = size(data,2);
+a1 = data;
+a1h = [ones(1, m); data]; 
+w1h = [b1 W1];
+z2 = w1h * a1h;
+a2 = sigmoid(z2);
+a2h = [ones(1, m); a2];
+w2h = [b2 W2];
+zl = w2h * a2h;
+al = sigmoid(zl);
 
+rho = sum(a2,2) ./ m;  
+sparsity = (-sparsityParam./rho+(1-sparsityParam)./(1-rho));
 
+cost = 0.5 * sum(sum((al - data).^2)) / m;
+cost = cost + 0.5 * lambda * ( sum(sum(W1.^2)) + sum(sum(W2.^2)));
+cost = cost + beta * sum(kl(sparsityParam, rho));
 
+delta_l = (al - data) .* al .* (1-al);
+delta_2 = (W2' * delta_l + repmat(beta*sparsity,1,m)) .* a2 .* (1-a2) ;
 
+W1grad = W1grad + (delta_2 * a1') / m + lambda * W1;
+W2grad = W2grad + (delta_l * a2') / m + lambda * W2;
 
-
-
-
-
-
-
-
-
-
-
-
+b1grad = b1grad + sum(delta_2,2)/m;
+b2grad = b2grad + sum(delta_l,2)/m;
 
 %-------------------------------------------------------------------
 % After computing the cost and gradient, we will convert the gradients back
@@ -79,3 +90,6 @@ function sigm = sigmoid(x)
     sigm = 1 ./ (1 + exp(-x));
 end
 
+function klv = kl(rho, rhoh) 
+    klv = rho .* log(rho ./rhoh) + (1-rho) .* log( (1-rho) ./ ( 1- rhoh)); 
+end
