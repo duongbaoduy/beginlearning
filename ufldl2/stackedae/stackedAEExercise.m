@@ -54,20 +54,22 @@ sae1Theta = initializeParameters(hiddenSizeL1, inputSize);
 %  Instructions: Train the first layer sparse autoencoder, this layer has
 %                an hidden size of "hiddenSizeL1"
 %                You should store the optimal parameters in sae1OptTheta
+addpath minFunc/
+options.Method = 'lbfgs';
+options.maxIter = 400;  
+options.display = 'on';
+[sae1OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                    inputSize, hiddenSizeL1, ...
+                                    lambda, sparsityParam, ...
+                                    beta, trainData), ...
+                            sae1Theta, options);
 
+save result.mat;
+error('debug');
 
-
-
-
-
-
-
-
-
-
-
-
-
+% Visualize weights
+W1 = reshape(sae1OptTheta(1:hiddenSizeL1 * inputSize), hiddenSizeL1, inputSize);
+display_network(W1');
 
 % -------------------------------------------------------------------------
 
@@ -93,17 +95,18 @@ sae2Theta = initializeParameters(hiddenSizeL2, hiddenSizeL1);
 %
 %                You should store the optimal parameters in sae2OptTheta
 
-
-
-
-
-
-
-
-
-
-
-
+addpath minFunc/
+options.Method = 'lbfgs';
+options.maxIter = 400;  
+options.display = 'on';
+[sae2OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                    hiddenSizeL1, hiddenSizeL2, ...
+                                    lambda, sparsityParam, ...
+                                    beta, sae1Features), ...
+                            sae2Theta, options);
+% Visualize weights
+W1 = reshape(sae2OptTheta(1:hiddenSizeL1 * hiddenSizeL2), hiddenSizeL2, hiddenSizeL1);
+display_network(W1');
 
 % -------------------------------------------------------------------------
 
@@ -130,10 +133,6 @@ saeSoftmaxTheta = 0.005 * randn(hiddenSizeL2 * numClasses, 1);
 %
 %  NOTE: If you used softmaxTrain to complete this part of the exercise,
 %        set saeSoftmaxOptTheta = softmaxModel.optTheta(:);
-
-
-
-
 
 
 
