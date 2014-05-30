@@ -22,16 +22,13 @@ thetagrad = zeros(numClasses, inputSize);
 %  Instructions: Compute the cost and gradient for softmax regression.
 %                You need to compute thetagrad and cost.
 %                The groundTruth matrix might come in handy.
+hvalue = exp(theta * data);
+allSum = sum(hvalue);
+allSum = repmat(allSum, numClasses, 1);
+hvalue = hvalue ./ allSum;
 
-
-
-
-
-
-
-
-
-
+cost = -1 * sum(sum(log(hvalue).*groundTruth)) / numCases + 0.5 * lambda * sum(sum(theta.^2));
+thetagrad = -1 *  (groundTruth - hvalue) * data' ./ numCases + lambda * theta;
 
 
 % ------------------------------------------------------------------
