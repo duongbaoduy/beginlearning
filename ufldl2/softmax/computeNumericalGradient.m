@@ -17,9 +17,8 @@ numgrad = zeros(size(theta));
 % respect to theta(i).
 %                
 % Hint: You will probably want to compute the elements of numgrad one at a time. 
-epsilon = 0.0001;
+epsilon = 1e-4;
 n = size(theta);
-
 for i=1:n
     theta(i) = theta(i) + epsilon;
     valueLeft = J(theta);

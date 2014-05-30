@@ -69,15 +69,20 @@ theta = initializeParameters(hiddenSize, inputSize);
 %  Find opttheta by running the sparse autoencoder on
 %  unlabeledTrainingImages
 
-opttheta = theta; 
+addpath minFunc/
+options.Method = 'lbfgs'; % Here, we use L-BFGS to optimize our cost
+                          % function. Generally, for minFunc to work, you
+                          % need a function pointer with two outputs: the
+                          % function value and the gradient. In our problem,
+                          % sparseAutoencoderCost.m satisfies this.
+options.maxIter = 400;	  % Maximum number of iterations of L-BFGS to run 
+options.display = 'on';
 
-
-
-
-
-
-
-
+[opttheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                   inputSize, hiddenSize, ...
+                                   lambda, sparsityParam, ...
+                                   beta, unlabeledData), ...
+                             theta, options);
 
 %% -----------------------------------------------------
                           
@@ -97,6 +102,7 @@ trainFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, ...
 testFeatures = feedForwardAutoencoder(opttheta, hiddenSize, inputSize, ...
                                        testData);
 
+
 %%======================================================================
 %% STEP 4: Train the softmax classifier
 
@@ -109,14 +115,7 @@ softmaxModel = struct;
 
 % You need to compute softmaxModel using softmaxTrain on trainFeatures and
 % trainLabels
-
-
-
-
-
-
-
-
+softmaxModel = softmaxTrain(hiddenSize, 5, 1e-4, trainFeatures, trainLabels);
 
 
 %% -----------------------------------------------------
@@ -128,20 +127,7 @@ softmaxModel = struct;
 %% ----------------- YOUR CODE HERE ----------------------
 % Compute Predictions on the test set (testFeatures) using softmaxPredict
 % and softmaxModel
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+pred = softmaxPredict(softmaxModel, testFeatures);  
 
 %% -----------------------------------------------------
 
