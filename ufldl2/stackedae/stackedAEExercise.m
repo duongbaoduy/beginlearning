@@ -64,13 +64,9 @@ options.display = 'on';
                                     beta, trainData), ...
                             sae1Theta, options);
 
-save result.mat;
-error('debug');
-
 % Visualize weights
 W1 = reshape(sae1OptTheta(1:hiddenSizeL1 * inputSize), hiddenSizeL1, inputSize);
 display_network(W1');
-
 % -------------------------------------------------------------------------
 
 
@@ -104,9 +100,6 @@ options.display = 'on';
                                     lambda, sparsityParam, ...
                                     beta, sae1Features), ...
                             sae2Theta, options);
-% Visualize weights
-W1 = reshape(sae2OptTheta(1:hiddenSizeL1 * hiddenSizeL2), hiddenSizeL2, hiddenSizeL1);
-display_network(W1');
 
 % -------------------------------------------------------------------------
 
@@ -123,7 +116,6 @@ display_network(W1');
 %  Randomly initialize the parameters
 saeSoftmaxTheta = 0.005 * randn(hiddenSizeL2 * numClasses, 1);
 
-
 %% ---------------------- YOUR CODE HERE  ---------------------------------
 %  Instructions: Train the softmax classifier, the classifier takes in
 %                input of dimension "hiddenSizeL2" corresponding to the
@@ -133,12 +125,9 @@ saeSoftmaxTheta = 0.005 * randn(hiddenSizeL2 * numClasses, 1);
 %
 %  NOTE: If you used softmaxTrain to complete this part of the exercise,
 %        set saeSoftmaxOptTheta = softmaxModel.optTheta(:);
-
-
-
-
-
-
+softmaxModel = struct;
+softmaxModel = softmaxTrain(hiddenSizeL2, numClasses, 1e-4, sae2Features, trainLabels);
+saeSoftmaxOptTheta = softmaxModel.optTheta(:);
 
 % -------------------------------------------------------------------------
 
@@ -169,22 +158,16 @@ stackedAETheta = [ saeSoftmaxOptTheta ; stackparams ];
 %                to "hiddenSizeL2".
 %
 %
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+save result.mat;
+%  Use minFunc to minimize the function
+options.Method = 'lbfgs';
+options.maxIter = 400;
+options.display = 'on';
+[opttheta, cost] = minFunc( @(p) stackedAECost(p, ...
+                                    inputSize, hiddenSize, ...
+                                    numClasses, netconfig,
+                                    lambda, trainData, trainLabels), ...
+                            stackedAETheta, options);
 
 % -------------------------------------------------------------------------
 
