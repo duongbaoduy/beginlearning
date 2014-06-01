@@ -63,7 +63,7 @@ diff = norm(numGrad-grad)/norm(numGrad+grad);
 % Should be small. In our implementation, these values are usually less than 1e-9.
 disp(diff); 
 
-assert(diff < 1e-9, 'Difference too large. Check your gradient computation again');
+assert(diff < 1e-5, 'Difference too large. Check your gradient computation again');
 
 % NOTE: Once your gradients check out, you should run step 0 again to
 %       reinitialize the parameters
