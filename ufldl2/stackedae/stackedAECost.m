@@ -16,7 +16,6 @@ function [ cost, grad ] = stackedAECost(theta, inputSize, hiddenSize, ...
 % labels: A vector containing labels, where labels(i) is the label for the
 % i-th training example
 
-
 %% Unroll softmaxTheta parameter
 
 % We first extract the part which compute the softmax gradient
@@ -60,19 +59,45 @@ groundTruth = full(sparse(labels, 1:M, 1));
 %                Note that the size of the matrices in stackgrad should
 %                match exactly that of the size of the matrices in stack.
 %
+outLay = numel(stack) + 2;
+a = cell( outLay);
+z = cell( outLay);
+delta = cell( outLay);
 
+% Forward computing
+a{1} = data; 
+for d=1:numel(stack)
+    l = d + 1;      % layer index, from input to output 
+    ah = [ones(1, size(a{d},2)); a{d}];
+    wh = [stack{d}.b stack{d}.w];
+    z{l} = wh * ah;
+    a{l} = sigmoid(z{l});    
+end
+z{outLay} = softmaxTheta * a{outLay - 1}; 
+a{outLay} = exp(z{outLay});
+hvalue = a{outLay} ./ repmat( sum(a{outLay},1), size(a{outLay},1), 1);
 
+% cost computing
+wr = 0; 
+for d=1:numel(stack)
+    wr = wr + sum(sum(stack{d}.w.^2));
+end
+wr = wr + sum(sum(softmaxTheta.^2));
 
+cost = -1 * sum(sum(log(hvalue).*groundTruth)) / M + 0.5 * lambda * wr;
 
+% backpropagation
+delta{outLay} = -1 * (groundTruth - hvalue);
+softmaxThetaGrad = softmaxThetaGrad + delta{outLay} * a{outLay-1}' / M + lambda * softmaxTheta;
 
+delta{outLay-1} = softmaxTheta' * delta{outLay} .* a{outLay-1} .* ( 1 - a{outLay-1});
 
-
-
-
-
-
-
-
+for d=numel(stack):-1:1
+    l = d;
+    stackgrad{d}.w = stackgrad{d}.w + delta{l+1} * a{l}' / M + lambda * stack{d}.w;
+    stackgrad{d}.b = stackgrad{d}.b + sum(delta{l+1},2)/ M;
+    delta{l} = stack{d}.w' * delta{l+1} .* a{l} .* (1-a{l});
+end
 
 
 % -------------------------------------------------------------------------

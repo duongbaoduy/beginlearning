@@ -158,12 +158,10 @@ stackedAETheta = [ saeSoftmaxOptTheta ; stackparams ];
 %                to "hiddenSizeL2".
 %
 %
-save result.mat;
-%  Use minFunc to minimize the function
 options.Method = 'lbfgs';
 options.maxIter = 400;
 options.display = 'on';
-[opttheta, cost] = minFunc( @(p) stackedAECost(p, ...
+[stackedAEOptTheta, cost] = minFunc( @(p) stackedAECost(p, ...
                                     inputSize, hiddenSize, ...
                                     numClasses, netconfig,
                                     lambda, trainData, trainLabels), ...
