@@ -84,7 +84,7 @@ for d=1:numel(stack)
 end
 wr = wr + sum(sum(softmaxTheta.^2));
 
-cost = -1 * sum(sum(log(hvalue).*groundTruth)) / M + 0.5 * lambda * wr;
+cost = -1 * sum(sum(log(hvalue).*groundTruth)) / M + 0.5 * lambda * sum(sum(softmaxTheta.^2));
 
 % backpropagation
 delta{outLay} = -1 * (groundTruth - hvalue);
@@ -94,7 +94,7 @@ delta{outLay-1} = softmaxTheta' * delta{outLay} .* a{outLay-1} .* ( 1 - a{outLay
 
 for d=numel(stack):-1:1
     l = d;
-    stackgrad{d}.w = stackgrad{d}.w + delta{l+1} * a{l}' / M + lambda * stack{d}.w;
+    stackgrad{d}.w = stackgrad{d}.w + delta{l+1} * a{l}' / M;   %lambda * stack{d}.w;
     stackgrad{d}.b = stackgrad{d}.b + sum(delta{l+1},2)/ M;
     delta{l} = stack{d}.w' * delta{l+1} .* a{l} .* (1-a{l});
 end

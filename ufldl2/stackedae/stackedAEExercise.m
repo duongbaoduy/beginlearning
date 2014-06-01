@@ -67,7 +67,6 @@ options.display = 'on';
 % Visualize weights
 W1 = reshape(sae1OptTheta(1:hiddenSizeL1 * inputSize), hiddenSizeL1, inputSize);
 display_network(W1');
-save result1.mat;
 % -------------------------------------------------------------------------
 
 
@@ -130,7 +129,6 @@ softmaxModel = struct;
 softmaxModel = softmaxTrain(hiddenSizeL2, numClasses, lambda, sae2Features, trainLabels);
 saeSoftmaxOptTheta = softmaxModel.optTheta(:);
 
-save result2.mat;
 % -------------------------------------------------------------------------
 
 
@@ -169,7 +167,6 @@ options.display = 'on';
                                     lambda, trainData, trainLabels), ...
                             stackedAETheta, options);
 
-save result3.mat;
 % -------------------------------------------------------------------------
 
 
