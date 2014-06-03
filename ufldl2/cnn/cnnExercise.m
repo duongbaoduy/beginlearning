@@ -41,7 +41,7 @@ poolDim = 19;          % dimension of pooling region
 optTheta =  zeros(2*hiddenSize*visibleSize+hiddenSize+visibleSize, 1);
 ZCAWhite =  zeros(visibleSize, visibleSize);
 meanPatch = zeros(visibleSize, 1);
-
+load('STL10Features.mat');
 
 % --------------------------------------------------------------------
 
