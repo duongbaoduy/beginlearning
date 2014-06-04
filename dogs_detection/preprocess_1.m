@@ -63,6 +63,6 @@ for i=1:fileNumber
  
     trainImages(:,:,:,end+1) = img;
 end
-trainLabels = zeros(0, size(trainImages,4));
+trainLabels = zeros(1, size(trainImages,4));
 trainLabels(1:okLabel) = 1;
 save('trainImages.mat', 'trainImages', 'trainLabels');
