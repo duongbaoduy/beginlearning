@@ -1,7 +1,7 @@
 fileList = dir('./dogImages/');
 fileList = fileList(3:end);
-imgWidth = 96;
-imgHeight = 96;
+imgWidth = 64;
+imgHeight = 64;
 imgPatch = 8;
 patchNumber = 100000;
 [fileNumber] = size(fileList);
@@ -34,6 +34,7 @@ displayColorNetwork(patches(:,1:100));
 testImages = zeros(imgWidth, imgHeight, 3, 0);
 trainImages = zeros(imgWidth, imgHeight, 3, 0);
 
+
 for i=1:fileNumber
     fileName = fileList(i).name;
     fileName = sprintf('./dogImages/%s', fileName);
@@ -47,7 +48,21 @@ for i=1:fileNumber
     end
     
 end
-
-save('trainImages.mat', 'trainImages');
 save('testImages.mat', 'testImages');
 
+okLabel = size(trainImages,4);
+
+fileList = dir('./fakeImages/');
+fileList = fileList(3:end);
+[fileNumber] = size(fileList);
+for i=1:fileNumber
+    fileName = fileList(i).name;
+    fileName = sprintf('./fakeImages/%s', fileName);
+    img = imread(fileName);
+    img = im2double(img);
+ 
+    trainImages(:,:,:,end+1) = img;
+end
+trainLabels = zeros(0, size(trainImages,4));
+trainLabels(1:okLabel) = 1;
+save('trainImages.mat', 'trainImages', 'trainLabels');
