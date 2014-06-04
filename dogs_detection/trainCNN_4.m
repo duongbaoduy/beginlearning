@@ -1,17 +1,38 @@
-imageDim = 64;         % image dimension
-imageChannels = 3;     % number of channels (rgb, so 3)
-patchDim = 8;          % patch dimension
-visibleSize = patchDim * patchDim * imageChannels;  % number of input units 
-outputSize = visibleSize;   % number of output units
-hiddenSize = 400;           % number of hidden units 
-epsilon = 0.1;	       % epsilon for ZCA whitening
-poolDim = 19;          % dimension of pooling region
-softmaxLambda = 1e-4;
 
-load trainImages.mat;
-numTrainImages = size(trainImages, 4);
+lambda = 0.01;
 
-load testImages.mat;
-numTestImages = size(testImages, 4);
+load cnnPooledFeatures.mat;
 
+numTrainImages = size(pooledFeaturesTrain, 2);
+X = permute(pooledFeaturesTrain, [1 3 4 2]);
+X = reshape(X, numel(pooledFeaturesTrain) / numTrainImages,...
+        numTrainImages);
+X = [ones(1, size(X,2)); X];
+theta = 0.005 * randn(size(X, 1), 1);
+
+addpath minFunc/
+options = struct;
+options.Method = 'lbfgs';
+options.maxIter = 400;
+minFuncOptions.display = 'on';
+
+[optTheta, cost] = minFunc( @(p) linearRegCost(p, ...
+                                   X', trainLabels', lambda), ... 
+                              theta, options);
+
+Y = sigmoid(X' * optTheta);
+Y = (Y>0.5);
+acc = (Y(:) == trainLabels(:));
+acc = sum(acc) / size(acc, 1);
+fprintf('Accuracy of train: %2.3f%%\n', acc * 100);
+
+numTestImages = size(pooledFeaturesTest, 2);
+X = permute(pooledFeaturesTest, [1 3 4 2]);
+X = reshape(X, numel(pooledFeaturesTest) / numTestImages,...
+        numTestImages);
+X = [ones(1, size(X,2)); X];
+Y = sigmoid(X' * optTheta);
+Y = (Y>0.5);
+acc = sum(Y) / size(Y,1);
+fprintf('Accuracy of test: %2.3f%%\n', acc * 100);
 
