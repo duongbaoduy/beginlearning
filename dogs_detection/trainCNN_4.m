@@ -16,11 +16,10 @@ options.Method = 'lbfgs';
 options.maxIter = 400;
 minFuncOptions.display = 'on';
 
-[optTheta, cost] = minFunc( @(p) linearRegCost(p, ...
+[optLinearRegTheta, cost] = minFunc( @(p) linearRegCost(p, ...
                                    X', trainLabels', lambda), ... 
                               theta, options);
-
-Y = sigmoid(X' * optTheta);
+Y = sigmoid(X' * optLinearRegTheta);
 Y = (Y>0.5);
 acc = (Y(:) == trainLabels(:));
 acc = sum(acc) / size(acc, 1);
@@ -31,8 +30,9 @@ X = permute(pooledFeaturesTest, [1 3 4 2]);
 X = reshape(X, numel(pooledFeaturesTest) / numTestImages,...
         numTestImages);
 X = [ones(1, size(X,2)); X];
-Y = sigmoid(X' * optTheta);
-Y = (Y>0.5);
-acc = sum(Y) / size(Y,1);
+testY = sigmoid(X' * optLinearRegTheta);
+testY = (testY>0.5);
+acc = sum(testY) / size(testY,1);
 fprintf('Accuracy of test: %2.3f%%\n', acc * 100);
 
+save('linearRegOptTheta.mat', 'optLinearRegTheta');
