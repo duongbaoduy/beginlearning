@@ -6,7 +6,7 @@ outputSize = visibleSize;   % number of output units
 hiddenSize = 400;           % number of hidden units 
 epsilon = 0.1;	       % epsilon for ZCA whitening
 poolDim = 19;          % dimension of pooling region
-stepSize = 50;
+stepSize = 40;
 assert(mod(hiddenSize, stepSize) == 0, 'stepSize should divide hiddenSize');
 
 load dogFeatures.mat;
