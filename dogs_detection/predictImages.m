@@ -1,4 +1,4 @@
-function value = predictImage(fileName);
+function [value] = predictImages(images);
 
 imageDim = 64;         % image dimension
 imageChannels = 3;     % number of channels (rgb, so 3)
@@ -11,13 +11,6 @@ poolDim = 19;          % dimension of pooling region
 load dogFeatures.mat;
 W = reshape(optTheta(1:visibleSize * hiddenSize), hiddenSize, visibleSize);
 b = optTheta(2*hiddenSize*visibleSize+1:2*hiddenSize*visibleSize+hiddenSize);
-
-img = imread(fileName);
-img = im2double(img);
-[w h c] = size(img);
-assert( w == 64 && h == 64, 'We only support 64x64 test image');
-images = zeros(64,64,3,0);
-images(:,:,:,1) = img;
 
 numTestImages = size(images,4);
 
