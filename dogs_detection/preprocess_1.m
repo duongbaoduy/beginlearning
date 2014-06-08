@@ -48,9 +48,9 @@ for i=1:fileNumber
     end
     
 end
-save('testImages.mat', 'testImages');
 
-okLabel = size(trainImages,4);
+trainOK = size(trainImages,4);
+testOK = size(testImages,4);
 
 fileList = dir('./fakeImages/');
 fileList = fileList(3:end);
@@ -60,9 +60,16 @@ for i=1:fileNumber
     fileName = sprintf('./fakeImages/%s', fileName);
     img = imread(fileName);
     img = im2double(img);
- 
-    trainImages(:,:,:,end+1) = img;
+    if mod(i,10) == 0 
+        testImages(:,:,:,end+1) = img; 
+    else  
+        trainImages(:,:,:,end+1) = img;
+    end
 end
 trainLabels = zeros(1, size(trainImages,4));
-trainLabels(1:okLabel) = 1;
+trainLabels(1:trainOK) = 1;
+testLabels = zeros(1, size(testImages,4));
+testLabels(1:testOK) = 1;
+
+save('testImages.mat', 'testImages', 'testLabels');
 save('trainImages.mat', 'trainImages', 'trainLabels');

@@ -57,6 +57,6 @@ for convPart = 1:(hiddenSize / stepSize)
 end
 
 % You might want to save the pooled features since convolution and pooling takes a long time
-save('cnnPooledFeatures.mat', 'pooledFeaturesTrain', 'pooledFeaturesTest', 'trainLabels');
+save('cnnPooledFeatures.mat', 'pooledFeaturesTrain', 'pooledFeaturesTest', 'trainLabels', 'testLabels');
 toc();
 

@@ -9,7 +9,7 @@ img = im2double(img);
 img = imresize(img, [384 round(384/w*h)]);
 [w h c] = size(img);
 
-searchWindows = [256 32;128 16;64 8];
+searchWindows = [200 32;128 16;64 8];
 
 images = zeros(outputDim, outputDim, imageChannels, 0);
 
@@ -38,6 +38,7 @@ for i = 1:size(searchWindows,1)
                 imshow(img);
                 figure;
                 imshow(subImage);
+                imwrite(subImage, './debug.png');
                 return;
             end
         end

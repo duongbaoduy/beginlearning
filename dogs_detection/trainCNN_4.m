@@ -1,5 +1,5 @@
 
-lambda = 0.01;
+lambda = 0.5;
 
 load cnnPooledFeatures.mat;
 
@@ -30,9 +30,10 @@ X = permute(pooledFeaturesTest, [1 3 4 2]);
 X = reshape(X, numel(pooledFeaturesTest) / numTestImages,...
         numTestImages);
 X = [ones(1, size(X,2)); X];
-testY = sigmoid(X' * optLinearRegTheta);
-testY = (testY>0.5);
-acc = sum(testY) / size(testY,1);
+testYV = sigmoid(X' * optLinearRegTheta);
+testY = (testYV>0.5);
+acc = (testY(:) == testLabels(:));
+acc = sum(acc) / size(acc, 1);
 fprintf('Accuracy of test: %2.3f%%\n', acc * 100);
 
 save('linearRegOptTheta.mat', 'optLinearRegTheta');
