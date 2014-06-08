@@ -9,3 +9,5 @@ Beginlearning
     http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial
     Programing exercises for Deep Learning Tutorial
 
+3. dogs_detection
+    A CNN pratice project, detecting dogs' face in images.

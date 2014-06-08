@@ -38,7 +38,6 @@ for i = 1:size(searchWindows,1)
                 imshow(img);
                 figure;
                 imshow(subImage);
-                imwrite(subImage, './debug.png');
                 return;
             end
         end
