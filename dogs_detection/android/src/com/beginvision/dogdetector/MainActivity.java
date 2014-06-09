@@ -34,7 +34,7 @@ public class MainActivity extends Activity
     private ReentrantLock previewLock = new ReentrantLock();
     private CameraView cameraView = null;
     private OverlayView overlayView = null;
-    private Bitmap  resultBitmap = null;    
+    private Bitmap  resultBitmap = null;  
 
     //
     //  Activiity's event handler
@@ -52,6 +52,9 @@ public class MainActivity extends Activity
 
         TextView tv = (TextView)findViewById(R.id.tv_message);
         tv.setText("将白框对准狗狗的脸");
+        
+        // init NativeAgent
+        NativeAgent.init();
 
         // init camera
         initCamera();
@@ -124,7 +127,7 @@ public class MainActivity extends Activity
         previewLock.lock(); 
         new Thread(new Runnable() {
                     public void run() {
-                        //NativeAgent.updatePictureForResult("VIBE", yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
+                        NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
                         c.addCallbackBuffer(yuvFrame);
                         new Handler(Looper.getMainLooper()).post( resultAction );
                     }
@@ -135,14 +138,6 @@ public class MainActivity extends Activity
         private int count = 0;
         @Override 
         public void run() {
-            /*
-            count++;
-            if ( (count % 3) == 0) {
-                overlayView.DrawResult(resultBitmap);
-            } else {
-                previewLock.unlock(); 
-            }
-            */
             previewLock.unlock(); 
         }
     };
