@@ -7,6 +7,7 @@
       Java_com_beginvision_dogdetector_NativeAgent_##name
 
 #include "helper.h"
+#include "detector.h"
 
 //
 //  Global variables
@@ -16,6 +17,7 @@
 //
 //  Internal helper functions
 //
+
 /*
 static std::string convert_jstring(JNIEnv* env, const jstring &js) {
     static char outbuf[1024];
@@ -24,7 +26,6 @@ static std::string convert_jstring(JNIEnv* env, const jstring &js) {
     std::string str = outbuf;
     return str;
 }
-
 static jint get_native_fd(JNIEnv* env, jobject fdesc) {
     jclass clazz;
     jfieldID fid;
@@ -39,16 +40,15 @@ static jint get_native_fd(JNIEnv* env, jobject fdesc) {
 //  Global functions called from Java side 
 //
 JOW(int, init)(JNIEnv* env, jclass) {
-         
-    return 0;
+    return DetectorInit();
 }
 
 JOW(int, updatePictureForResult)(JNIEnv* env, jclass, jbyteArray yuvData, jobject result, jint wid, jint hei) {
+    int ret;
     jbyte* cameraFrame = env->GetByteArrayElements(yuvData, NULL);
-    //VibeUpdateForResult(env, (unsigned char*)cameraFrame, result, wid, hei);
-    LOGD("kaka");
+    ret = DetectorUpdateForResult(env, (unsigned char*)cameraFrame, result, wid, hei);
     env->ReleaseByteArrayElements(yuvData, cameraFrame, 0);
-    return 0;
+    return ret;
 }
 
 JOW(int, updatePicture)(JNIEnv* env, jclass, jbyteArray yuvData, jint wid, jint hei) {

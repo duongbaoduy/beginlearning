@@ -17,6 +17,7 @@ import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Handler;
+import java.io.*;
 import android.util.*;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,6 +36,9 @@ public class MainActivity extends Activity
     private CameraView cameraView = null;
     private OverlayView overlayView = null;
     private Bitmap  resultBitmap = null;  
+    
+    private int     lastReturn = -1;
+    private boolean drawResult = false;
 
     //
     //  Activiity's event handler
@@ -127,8 +131,12 @@ public class MainActivity extends Activity
         previewLock.lock(); 
         new Thread(new Runnable() {
                     public void run() {
-                        NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
+                        int ret = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
                         c.addCallbackBuffer(yuvFrame);
+                        if ( lastReturn != ret ) {
+                            lastReturn = ret;
+                            drawResult = true;
+                        }
                         new Handler(Looper.getMainLooper()).post( resultAction );
                     }
                 }).start();
@@ -138,7 +146,11 @@ public class MainActivity extends Activity
         private int count = 0;
         @Override 
         public void run() {
-            previewLock.unlock(); 
+            if ( drawResult ) {
+                overlayView.DrawResult(resultBitmap);
+            } else {
+                previewLock.unlock();
+            } 
         }
     };
 }
