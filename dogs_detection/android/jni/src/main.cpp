@@ -1,5 +1,4 @@
 #include <vector>
-#include <android/bitmap.h>
 #include <bv/image.h>
 #include <bv/image_convert.h>
 
@@ -7,6 +6,7 @@
 #include "helper.h"
 
 #ifdef ANDROID
+#include <android/bitmap.h>
 
 DogDetector* myDetector = NULL;
 /********************************************************************************/
@@ -116,5 +116,8 @@ int DetectorUpdateForResult(JNIEnv* env,
 
 #else
 
-
+int main(int argc, const char *argv[]) {
+    
+    return 0;
+}
 #endif

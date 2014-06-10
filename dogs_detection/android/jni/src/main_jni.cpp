@@ -1,3 +1,5 @@
+#ifdef ANDROID
+
 #include <string>
 #include <jni.h>
 
@@ -76,3 +78,4 @@ extern "C" jint JNIEXPORT JNICALL JNI_OnUnLoad(JavaVM *jvm, void *reserved) {
     return 0;
 }
 
+#endif
