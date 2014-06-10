@@ -1,5 +1,6 @@
+//#include <iostream>
+#include "helper.h"
 #include "detector.h"
-#include <iostream>
 
 extern double wData[];
 extern double bData[];
@@ -28,25 +29,38 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
         convFeatures[i].resize(inputImageSize - convPatchSize+1, inputImageSize - convPatchSize+1);
     }
     Eigen::MatrixXd fw = *featureW * *zcaWhite;
+    Eigen::MatrixXd nb = *featureB - fw * *zcaMean;
+    LOGD(">>>>>>>>>>>>>>>>>>>>>>>> %s:%d", __FILE__, __LINE__);
     for (int y = 0; y <= inputImageSize - convPatchSize; y++) {
         for (int x = 0; x <= inputImageSize - convPatchSize; x++) {
-            // 生成192维度的特征向量
+#if 0
             Eigen::MatrixXd patch(convPatchSize, convPatchSize * 3);                
+            // 生成192维度的特征向量
             Eigen::MatrixXd patch_r = sourcePatches[0].block(y, x, convPatchSize, convPatchSize);
             Eigen::MatrixXd patch_g = sourcePatches[1].block(y, x, convPatchSize, convPatchSize);
             Eigen::MatrixXd patch_b = sourcePatches[2].block(y, x, convPatchSize, convPatchSize);
             patch << patch_r, patch_g, patch_b;
             patch.resize(visualSize, 1);
+#else
+            Eigen::MatrixXd patch(convPatchSize * convPatchSize * 3,1);
+            for(int xx = x, i=0; xx < x + convPatchSize; xx++, i++) {
+                for (int yy = y, j=0; yy < y + convPatchSize; yy++, j++) {
+                    int seq = j + i * convPatchSize;
+                    patch(seq + 0) = sourcePatches[0](yy,xx);
+                    patch(seq + 64) = sourcePatches[1](yy,xx);
+                    patch(seq + 128) = sourcePatches[2](yy,xx);
+                }
+            }
+#endif
             // 计算输出的400个特征向量
-            patch = patch - *zcaMean;
-            patch = fw * patch;
-            patch = *featureB + patch;
+            patch = fw * patch + nb;
             for (int i = 0; i < hiddenSize; i++) {
                 convFeatures[i](y,x) = 1.0 / ( 1.0 + exp(-1*patch(i,0)));
             }
         }
     }
     //std::cout << convFeatures[0] << std::endl;
+    LOGD(">>>>>>>>>>>>>>>>>>>>>>>> %s:%d", __FILE__, __LINE__);
     
     // Pools the given convolved features
     Eigen::MatrixXd poolFeatures(featureSize,1);

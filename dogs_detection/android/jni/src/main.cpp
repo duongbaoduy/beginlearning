@@ -35,7 +35,6 @@ int DetectorInit() {
     }
     myDetector = new DogDetector();
 
-
     return 0;
 }
 
@@ -65,6 +64,7 @@ int DetectorUpdateForResult(JNIEnv* env,
             sourcePatches[2](x-beginX,y-beginY) = b/255.0;
         }
     }
+
     // resize to 64x64
     Eigen::MatrixXd targetPatch(DogDetector::inputImageSize, DogDetector::inputImageSize);
     for(int i = 0; i < 3; i++) {

@@ -98,7 +98,7 @@ public class MainActivity extends Activity
     }
 
     public void onUpdateDone() {
-        previewLock.unlock(); 
+         
     }
 
     //
@@ -126,31 +126,32 @@ public class MainActivity extends Activity
     private void processNewFrame(final byte[] yuvFrame, final Camera c) {
         if ( previewLock.isLocked() ) {
             c.addCallbackBuffer(yuvFrame);
+            return;
         }
         
-        previewLock.lock(); 
         new Thread(new Runnable() {
                     public void run() {
+                        previewLock.lock(); 
                         int ret = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
                         c.addCallbackBuffer(yuvFrame);
                         if ( lastReturn != ret ) {
                             lastReturn = ret;
                             drawResult = true;
+                        } else {
+                            drawResult = false;
                         }
+                        previewLock.unlock();
                         new Handler(Looper.getMainLooper()).post( resultAction );
                     }
                 }).start();
     }
 
     private Runnable resultAction = new Runnable() {
-        private int count = 0;
         @Override 
         public void run() {
             if ( drawResult ) {
                 overlayView.DrawResult(resultBitmap);
-            } else {
-                previewLock.unlock();
-            } 
+            }
         }
     };
 }
