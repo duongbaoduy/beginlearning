@@ -117,7 +117,32 @@ int DetectorUpdateForResult(JNIEnv* env,
 #else
 
 int main(int argc, const char *argv[]) {
+    if ( argc < 2) {
+        std::cout << "Please input bmp file name" << std::endl;
+        return 0; 
+    }    
     
+    std::string fileName(argv[1]);
+    bv::ColorImage<3> img(fileName);
+    assert(img.width() == DogDetector::inputImageSize);
+    assert(img.height() == DogDetector::inputImageSize);
+    
+    std::vector<Eigen::MatrixXd> sourcePatches;  
+    sourcePatches.resize(3);
+    for(int i = 0; i < 3; i++) {
+        sourcePatches[i].resize(DogDetector::inputImageSize, DogDetector::inputImageSize);
+        for (int y = 0; y < DogDetector::inputImageSize; y++) {
+            for ( int x = 0; x < DogDetector::inputImageSize; x++) {
+                sourcePatches[i](y,x) = img.color(i).data(x,y) / 255.0;
+            }
+        }
+    }
+    
+    DogDetector* myDetector = new DogDetector();
+    double likeDog = myDetector->detect( sourcePatches);
+    std::cout << ">>>>> dog like value = " << likeDog << std::endl;
+    delete myDetector; 
+
     return 0;
 }
 #endif

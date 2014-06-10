@@ -18,7 +18,9 @@ imshow(images(:,:,:,1));
 
 convolvedFeatures = cnnConvolve(patchDim, hiddenSize, ...
         images, W, b, ZCAWhite, meanPatch);
+
 pooledFeatures = cnnPool(poolDim, convolvedFeatures);
+
 
 load linearRegOptTheta.mat
 X = permute(pooledFeatures, [1 3 4 2]);
