@@ -30,12 +30,11 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
     }
     Eigen::MatrixXd fw = *featureW * *zcaWhite;
     Eigen::MatrixXd nb = *featureB - fw * *zcaMean;
-    LOGD(">>>>>>>>>>>>>>>>>>>>>>>> %s:%d", __FILE__, __LINE__);
     for (int y = 0; y <= inputImageSize - convPatchSize; y++) {
         for (int x = 0; x <= inputImageSize - convPatchSize; x++) {
+            // 生成192维度的特征向量
 #if 0
             Eigen::MatrixXd patch(convPatchSize, convPatchSize * 3);                
-            // 生成192维度的特征向量
             Eigen::MatrixXd patch_r = sourcePatches[0].block(y, x, convPatchSize, convPatchSize);
             Eigen::MatrixXd patch_g = sourcePatches[1].block(y, x, convPatchSize, convPatchSize);
             Eigen::MatrixXd patch_b = sourcePatches[2].block(y, x, convPatchSize, convPatchSize);
@@ -54,13 +53,15 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
 #endif
             // 计算输出的400个特征向量
             patch = fw * patch + nb;
+            patch.array() = ((patch.array() * (-1) ).exp() + 1.0).inverse();
+
             for (int i = 0; i < hiddenSize; i++) {
-                convFeatures[i](y,x) = 1.0 / ( 1.0 + exp(-1*patch(i,0)));
+                convFeatures[i](y,x) = patch(i,0);
             }
+
         }
     }
     //std::cout << convFeatures[0] << std::endl;
-    LOGD(">>>>>>>>>>>>>>>>>>>>>>>> %s:%d", __FILE__, __LINE__);
     
     // Pools the given convolved features
     Eigen::MatrixXd poolFeatures(featureSize,1);
