@@ -1,6 +1,5 @@
 package com.beginvision.dogdetector;
 
-import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.http.conn.util.InetAddressUtils;
 import android.app.Activity;

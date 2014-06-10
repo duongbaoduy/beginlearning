@@ -2,7 +2,7 @@ OBJS_DIR = ./obj
 
 AR = ar
 CC = g++
-CFLAGS = -O2 -I. 
+CFLAGS = -g -O2 -I. 
 LDFLAGS = -lm
 
 LOCAL_SRC_FILES =

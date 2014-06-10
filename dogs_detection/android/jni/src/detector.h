@@ -9,17 +9,17 @@ public:
     DogDetector();
     ~DogDetector();
 
-    double detect(std::vector<Eigen::MatrixXd>& sourcePatches);
+    double detect(std::vector<Eigen::MatrixXf>& sourcePatches);
 
 private:
     void loadFeatureMatrix();
 
 private:
-    Eigen::MatrixXd* featureW;
-    Eigen::MatrixXd* featureB;
-    Eigen::MatrixXd* zcaMean;
-    Eigen::MatrixXd* zcaWhite; 
-    Eigen::MatrixXd* optTheta;
+    Eigen::MatrixXf* featureW;
+    Eigen::MatrixXf* featureB;
+    Eigen::MatrixXf* zcaMean;
+    Eigen::MatrixXf* zcaWhite; 
+    Eigen::MatrixXf* optTheta;
 
 public:
     static const int inputImageSize;

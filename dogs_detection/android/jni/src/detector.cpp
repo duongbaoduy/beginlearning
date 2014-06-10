@@ -21,27 +21,27 @@ DogDetector::DogDetector() {
 DogDetector::~DogDetector() {
 }
 
-double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
+double DogDetector::detect(std::vector<Eigen::MatrixXf>& sourcePatches) {
     // Convolved input raw images to 400x57x57 size
-    std::vector<Eigen::MatrixXd> convFeatures;
+    std::vector<Eigen::MatrixXf> convFeatures;
     convFeatures.resize(hiddenSize);
     for (int i = 0; i < hiddenSize; i++) {
         convFeatures[i].resize(inputImageSize - convPatchSize+1, inputImageSize - convPatchSize+1);
     }
-    Eigen::MatrixXd fw = *featureW * *zcaWhite;
-    Eigen::MatrixXd nb = *featureB - fw * *zcaMean;
+    Eigen::MatrixXf fw = *featureW * *zcaWhite;
+    Eigen::MatrixXf nb = *featureB - fw * *zcaMean;
     for (int y = 0; y <= inputImageSize - convPatchSize; y++) {
         for (int x = 0; x <= inputImageSize - convPatchSize; x++) {
             // 生成192维度的特征向量
 #if 0
-            Eigen::MatrixXd patch(convPatchSize, convPatchSize * 3);                
-            Eigen::MatrixXd patch_r = sourcePatches[0].block(y, x, convPatchSize, convPatchSize);
-            Eigen::MatrixXd patch_g = sourcePatches[1].block(y, x, convPatchSize, convPatchSize);
-            Eigen::MatrixXd patch_b = sourcePatches[2].block(y, x, convPatchSize, convPatchSize);
+            Eigen::MatrixXf patch(convPatchSize, convPatchSize * 3);                
+            Eigen::MatrixXf patch_r = sourcePatches[0].block(y, x, convPatchSize, convPatchSize);
+            Eigen::MatrixXf patch_g = sourcePatches[1].block(y, x, convPatchSize, convPatchSize);
+            Eigen::MatrixXf patch_b = sourcePatches[2].block(y, x, convPatchSize, convPatchSize);
             patch << patch_r, patch_g, patch_b;
             patch.resize(visualSize, 1);
 #else
-            Eigen::MatrixXd patch(convPatchSize * convPatchSize * 3,1);
+            Eigen::MatrixXf patch(convPatchSize * convPatchSize * 3,1);
             for(int xx = x, i=0; xx < x + convPatchSize; xx++, i++) {
                 for (int yy = y, j=0; yy < y + convPatchSize; yy++, j++) {
                     int seq = j + i * convPatchSize;
@@ -54,8 +54,9 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
             // 计算输出的400个特征向量
             patch = fw * patch + nb;
             patch.array() = ((patch.array() * (-1) ).exp() + 1.0).inverse();
-
+            
             for (int i = 0; i < hiddenSize; i++) {
+                //convFeatures[i](y,x) = 1.0 / ( 1 + exp(-1*patch(i,0)) );
                 convFeatures[i](y,x) = patch(i,0);
             }
 
@@ -64,7 +65,7 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
     //std::cout << convFeatures[0] << std::endl;
     
     // Pools the given convolved features
-    Eigen::MatrixXd poolFeatures(featureSize,1);
+    Eigen::MatrixXf poolFeatures(featureSize,1);
     poolFeatures(0,0) = 1;
     for (int i = 0; i < hiddenSize; i++) {      //注意排列顺序需要和模型文件一致 
         for (int y = 0; y < 3; y++) {
@@ -82,31 +83,31 @@ double DogDetector::detect(std::vector<Eigen::MatrixXd>& sourcePatches) {
 }
 
 void DogDetector::loadFeatureMatrix() {
-    featureW = new Eigen::MatrixXd(hiddenSize, visualSize);
+    featureW = new Eigen::MatrixXf(hiddenSize, visualSize);
     for(int i = 0; i < visualSize; i++) {
         for(int j = 0; j < hiddenSize; j++) {
             (*featureW)(j,i) = wData[i*hiddenSize + j];
         }
     }
     
-    featureB = new Eigen::MatrixXd(hiddenSize, 1);
+    featureB = new Eigen::MatrixXf(hiddenSize, 1);
     for(int i = 0; i < hiddenSize; i++) {
         (*featureB)(i,0) = bData[i];
     }
 
-    zcaMean = new Eigen::MatrixXd(visualSize, 1);
+    zcaMean = new Eigen::MatrixXf(visualSize, 1);
     for(int i = 0; i < visualSize; i++) {
         (*zcaMean)(i,0) = meanData[i];
     }
 
-    zcaWhite = new Eigen::MatrixXd(visualSize, visualSize); 
+    zcaWhite = new Eigen::MatrixXf(visualSize, visualSize); 
     for(int i = 0; i < visualSize; i++) {
         for (int j = 0; j < visualSize; j++) {
             (*zcaWhite)(j,i) = whiteData[i*visualSize+j];
         }
     }
 
-    optTheta = new Eigen::MatrixXd(featureSize, 1);
+    optTheta = new Eigen::MatrixXf(featureSize, 1);
     for(int i = 0; i < featureSize; i++) {
         (*optTheta)(i,0) = optThetaData[i];
     }

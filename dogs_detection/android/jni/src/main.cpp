@@ -45,7 +45,7 @@ int DetectorUpdateForResult(JNIEnv* env,
 
     int rectangleSize = hei/2;
     // 将YUV图像转换为64x64的RGB矩阵 
-    std::vector<Eigen::MatrixXd> sourcePatches;
+    std::vector<Eigen::MatrixXf> sourcePatches;
     sourcePatches.resize(3);
     for(int i = 0; i < 3; i++) {
         sourcePatches[i].resize(rectangleSize, rectangleSize);
@@ -66,19 +66,27 @@ int DetectorUpdateForResult(JNIEnv* env,
     }
 
     // resize to 64x64
-    Eigen::MatrixXd targetPatch(DogDetector::inputImageSize, DogDetector::inputImageSize);
+    Eigen::MatrixXf targetPatch(DogDetector::inputImageSize, DogDetector::inputImageSize);
     for(int i = 0; i < 3; i++) {
         bv::Convert::resizeImage(sourcePatches[i], targetPatch);
         sourcePatches[i] = targetPatch.transpose();
     }
     
+    bool isDog = false;  
     double likeDog = myDetector->detect(sourcePatches); 
-    LOGD(">>>>>>>>>>>>>>>>> %f", likeDog);
+    LOGD(" >>>>>>>>>>>>>>>>>>>likeDog = %f", likeDog);
+    if ( likeDog >= 0.85) {
+        isDog = true;
+    }
 
     // 修改输出图像 
     int ret; 
     AndroidBitmapInfo  info;
     unsigned int*              pixels;
+    unsigned int color = 0xFFFFFFFF;
+    if ( isDog ) {
+        color = 0xFF00FFFF;
+    }
     if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
         LOGD("AndroidBitmap_getInfo() failed ! error=%d", ret);
         return -1;
@@ -91,27 +99,33 @@ int DetectorUpdateForResult(JNIEnv* env,
     int lineStride = info.stride / 4;
     for(unsigned int x = (wid - rectangleSize)/2; x < (wid + rectangleSize)/2; x++) {
         int y = (hei - rectangleSize)/2;
-        pixels[(y-1)*lineStride+x] = 0xFFFFFFFF;
-        pixels[y*lineStride+x] = 0xFFFFFFFF;
-        pixels[(y+1)*lineStride+x] = 0xFFFFFFFF;
+        pixels[(y-1)*lineStride+x] = color;
+        pixels[y*lineStride+x] = color;
+        pixels[(y+1)*lineStride+x] = color;
         y = (hei + rectangleSize) / 2;
-        pixels[(y-1)*lineStride+x] = 0xFFFFFFFF;
-        pixels[y*lineStride+x] = 0xFFFFFFFF;
-        pixels[(y+1)*lineStride+x] = 0xFFFFFFFF;
+        pixels[(y-1)*lineStride+x] = color;
+        pixels[y*lineStride+x] = color;
+        pixels[(y+1)*lineStride+x] = color;
     }
     for(unsigned int y = (hei - rectangleSize)/2; y < (hei + rectangleSize)/2; y++) {
         int x = (wid - rectangleSize)/2;
-        pixels[y*lineStride+x-1] = 0xFFFFFFFF;
-        pixels[y*lineStride+x] = 0xFFFFFFFF;
-        pixels[y*lineStride+x+1] = 0xFFFFFFFF;
+        pixels[y*lineStride+x-1] = color;
+        pixels[y*lineStride+x] = color;
+        pixels[y*lineStride+x+1] = color;
         x = (wid + rectangleSize) / 2;
-        pixels[y*lineStride+x-1] = 0xFFFFFFFF;
-        pixels[y*lineStride+x] = 0xFFFFFFFF;
-        pixels[y*lineStride+x+1] = 0xFFFFFFFF;
+        pixels[y*lineStride+x-1] = color;
+        pixels[y*lineStride+x] = color;
+        pixels[y*lineStride+x+1] = color;
     }
 
     AndroidBitmap_unlockPixels(env, bitmap);
-    return 0;
+
+    if ( isDog) {
+        return 1;        
+    } else {
+        return 0;
+    }
+
 }
 
 #else
@@ -127,7 +141,7 @@ int main(int argc, const char *argv[]) {
     assert(img.width() == DogDetector::inputImageSize);
     assert(img.height() == DogDetector::inputImageSize);
     
-    std::vector<Eigen::MatrixXd> sourcePatches;  
+    std::vector<Eigen::MatrixXf> sourcePatches;  
     sourcePatches.resize(3);
     for(int i = 0; i < 3; i++) {
         sourcePatches[i].resize(DogDetector::inputImageSize, DogDetector::inputImageSize);
