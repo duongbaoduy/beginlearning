@@ -36,6 +36,8 @@ public class MainActivity extends Activity
     private OverlayView overlayView = null;
     private Bitmap  resultBitmap = null;  
     
+    private boolean doAction = true;
+    private double detectResult = 0.0;
     //
     //  Activiity's event handler
     //
@@ -51,7 +53,9 @@ public class MainActivity extends Activity
         setContentView(R.layout.main);
 
         TextView tv = (TextView)findViewById(R.id.tv_message);
-        tv.setText("将白框对准狗狗的脸");
+        tv.setText("将白框对准狗狗的脸, 按下检测按钮");
+        Button btn = (Button)findViewById(R.id.btn_control);
+        btn.setOnClickListener(controlAction);
         
         // init NativeAgent
         NativeAgent.init();
@@ -124,22 +128,38 @@ public class MainActivity extends Activity
             c.addCallbackBuffer(yuvFrame);
             return;
         }
-        
-        new Thread(new Runnable() {
-                    public void run() {
-                        previewLock.lock(); 
-                        int ret = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
-                        c.addCallbackBuffer(yuvFrame);
-                        new Handler(Looper.getMainLooper()).post( resultAction );
-                        previewLock.unlock();
-                    }
-                }).start();
+        if ( doAction == true) { 
+            doAction = false;
+            new Thread(new Runnable() {
+                        public void run() {
+                            previewLock.lock(); 
+                            detectResult = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
+                            c.addCallbackBuffer(yuvFrame);
+                            new Handler(Looper.getMainLooper()).post( resultAction );
+                            previewLock.unlock();
+                        }
+                    }).start();
+        } else {
+            c.addCallbackBuffer(yuvFrame);
+        }
     }
 
     private Runnable resultAction = new Runnable() {
         @Override 
         public void run() {
             overlayView.DrawResult(resultBitmap);
+            TextView tv = (TextView)findViewById(R.id.tv_message);
+            tv.setText("将白框对准狗狗的脸, 按下检测按钮, 当前检测分值:" + detectResult);
         }
     };
+
+    private OnClickListener controlAction = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            doAction = true; 
+            TextView tv = (TextView)findViewById(R.id.tv_message);
+            tv.setText("计算中....");
+        }
+    };
+
 }

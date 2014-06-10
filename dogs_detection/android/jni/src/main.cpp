@@ -38,7 +38,7 @@ int DetectorInit() {
     return 0;
 }
 
-int DetectorUpdateForResult(JNIEnv* env,
+double DetectorUpdateForResult(JNIEnv* env,
         const unsigned char* frameIn,
         jobject bitmap,
         unsigned int wid, unsigned int hei ) {
@@ -75,7 +75,7 @@ int DetectorUpdateForResult(JNIEnv* env,
     bool isDog = false;  
     double likeDog = myDetector->detect(sourcePatches); 
     LOGD(" >>>>>>>>>>>>>>>>>>>likeDog = %f", likeDog);
-    if ( likeDog >= 0.60) {
+    if ( likeDog >= 0.50) {
         isDog = true;
     }
 
@@ -120,12 +120,7 @@ int DetectorUpdateForResult(JNIEnv* env,
 
     AndroidBitmap_unlockPixels(env, bitmap);
 
-    if ( isDog) {
-        return 1;        
-    } else {
-        return 0;
-    }
-
+    return likeDog;
 }
 
 #else

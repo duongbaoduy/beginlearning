@@ -39,7 +39,7 @@ static jint get_native_fd(JNIEnv* env, jobject fdesc) {
 //  Global functions called from Java side 
 //
 int DetectorInit();
-int DetectorUpdateForResult(JNIEnv* env,
+double DetectorUpdateForResult(JNIEnv* env,
         const unsigned char* frameIn,
         jobject result,
         unsigned int wid, unsigned int hei );
@@ -48,8 +48,8 @@ JOW(int, init)(JNIEnv* env, jclass) {
     return DetectorInit();
 }
 
-JOW(int, updatePictureForResult)(JNIEnv* env, jclass, jbyteArray yuvData, jobject result, jint wid, jint hei) {
-    int ret;
+JOW(double, updatePictureForResult)(JNIEnv* env, jclass, jbyteArray yuvData, jobject result, jint wid, jint hei) {
+    double ret;
     jbyte* cameraFrame = env->GetByteArrayElements(yuvData, NULL);
     ret = DetectorUpdateForResult(env, (unsigned char*)cameraFrame, result, wid, hei);
     env->ReleaseByteArrayElements(yuvData, cameraFrame, 0);
