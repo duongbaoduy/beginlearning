@@ -75,7 +75,7 @@ int DetectorUpdateForResult(JNIEnv* env,
     bool isDog = false;  
     double likeDog = myDetector->detect(sourcePatches); 
     LOGD(" >>>>>>>>>>>>>>>>>>>likeDog = %f", likeDog);
-    if ( likeDog >= 0.85) {
+    if ( likeDog >= 0.60) {
         isDog = true;
     }
 

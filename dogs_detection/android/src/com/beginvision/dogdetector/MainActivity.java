@@ -36,9 +36,6 @@ public class MainActivity extends Activity
     private OverlayView overlayView = null;
     private Bitmap  resultBitmap = null;  
     
-    private int     lastReturn = -1;
-    private boolean drawResult = false;
-
     //
     //  Activiity's event handler
     //
@@ -133,14 +130,8 @@ public class MainActivity extends Activity
                         previewLock.lock(); 
                         int ret = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
                         c.addCallbackBuffer(yuvFrame);
-                        if ( lastReturn != ret ) {
-                            lastReturn = ret;
-                            drawResult = true;
-                        } else {
-                            drawResult = false;
-                        }
-                        previewLock.unlock();
                         new Handler(Looper.getMainLooper()).post( resultAction );
+                        previewLock.unlock();
                     }
                 }).start();
     }
@@ -148,9 +139,7 @@ public class MainActivity extends Activity
     private Runnable resultAction = new Runnable() {
         @Override 
         public void run() {
-            if ( drawResult ) {
-                overlayView.DrawResult(resultBitmap);
-            }
+            overlayView.DrawResult(resultBitmap);
         }
     };
 }
