@@ -6,9 +6,6 @@
 #define JOW(rettype, name) extern "C" rettype JNIEXPORT JNICALL \
       Java_com_beginvision_dogdetector_NativeAgent_##name
 
-#include "helper.h"
-#include "detector.h"
-
 //
 //  Global variables
 //
@@ -39,6 +36,12 @@ static jint get_native_fd(JNIEnv* env, jobject fdesc) {
 //
 //  Global functions called from Java side 
 //
+int DetectorInit();
+int DetectorUpdateForResult(JNIEnv* env,
+        const unsigned char* frameIn,
+        jobject result,
+        unsigned int wid, unsigned int hei );
+
 JOW(int, init)(JNIEnv* env, jclass) {
     return DetectorInit();
 }
