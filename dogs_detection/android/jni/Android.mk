@@ -7,7 +7,7 @@ MY_LOCAL_PATH = $(LOCAL_PATH)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libbeginvision
 LOCAL_CPP_EXTENSION := .cc .cpp
-LOCAL_CPPFLAGS := -O3 -Werror -Wall 
+LOCAL_CPPFLAGS := -O3 -Werror -Wall -mfpu=neon -mfloat-abi=softfp 
 LOCAL_CPPFLAGS += -DPOSIX -DLINUX -DANDROID
 LOCAL_C_INCLUDES :=  $(MY_LOCAL_PATH)
 include $(MY_LOCAL_PATH)/buildme.mk
