@@ -1,28 +1,47 @@
 load cnnPooledFeatures_class.mat;
-% Setup parameters for softmax
-softmaxLambda = 1e-4;
-numClasses = 25;
-numTrainImages = size(trainLabels, 2);
-% Reshape the pooledFeatures to form an input vector for softmax
+numTrainImages = size(pooledFeaturesTrain,2);
 softmaxX = permute(pooledFeaturesTrain, [1 3 4 2]);
 softmaxX = reshape(softmaxX, numel(pooledFeaturesTrain) / numTrainImages,...
     numTrainImages);
 softmaxY = trainLabels;
 
-options = struct;
-options.maxIter = 200;
-softmaxModel = softmaxTrain(numel(pooledFeaturesTrain) / numTrainImages,...
-    numClasses, softmaxLambda, softmaxX, softmaxY, options);
+numClasses = 25;
+inputSize = size(softmaxX,1);
+hiddenSize = 100;
 
-%  Now you will test your trained classifer against the test images
-numTestImages = size(testLabels, 2);
+theta = 0.005 * randn(numClasses * hiddenSize + (inputSize+1) * hiddenSize, 1);
+
+addpath minFunc/
+options = struct;
+options.maxIter = 1000;
+options.Method = 'lbfgs';
+options.display = 'on';
+
+lambda = 0.0001;
+[optTheta, cost] = minFunc( @(p) deepSoftmaxCost(p, ...
+                                    inputSize, hiddenSize, ...
+                                    numClasses, lambda, ... 
+                                    softmaxX, softmaxY), ...
+                                theta, options);
+
+save('deepSoftmaxOptTheta.mat', 'optTheta');
+
+[pred] = deepSoftmaxPredict(optTheta, inputSize, hiddenSize, ...
+                          numClasses, softmaxX);
+
+acc = mean(trainLabels(:) == pred(:));
+fprintf('Train Accuracy: %0.3f%%\n', acc * 100);
+
+
+numTestImages = size(pooledFeaturesTest,2);
 softmaxX = permute(pooledFeaturesTest, [1 3 4 2]);
-softmaxX = reshape(softmaxX, numel(pooledFeaturesTest) / numTestImages, numTestImages);
+softmaxX = reshape(softmaxX, numel(pooledFeaturesTest) / numTestImages,...
+    numTestImages);
 softmaxY = testLabels;
 
-[pred] = softmaxPredict(softmaxModel, softmaxX);
-acc = (pred(:) == softmaxY(:));
-acc = sum(acc) / size(acc, 1);
-fprintf('Accuracy: %2.3f%%\n', acc * 100);
+[pred] = deepSoftmaxPredict(optTheta, inputSize, hiddenSize, ...
+                          numClasses, softmaxX);
 
+acc = mean(testLabels(:) == pred(:));
+fprintf('Test Accuracy: %0.3f%%\n', acc * 100);
 
