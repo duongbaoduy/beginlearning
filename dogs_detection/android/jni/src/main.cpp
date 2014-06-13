@@ -72,13 +72,10 @@ double DetectorUpdateForResult(JNIEnv* env,
         sourcePatches[i] = targetPatch.transpose();
     }
     
-    bool isDog = false;  
     double likeDog = myDetector->detect(sourcePatches); 
     LOGD(" >>>>>>>>>>>>>>>>>>>likeDog = %f", likeDog);
-    if ( likeDog >= 0.50) {
-        isDog = true;
-    }
 
+#if 0
     // 修改输出图像 
     int ret; 
     AndroidBitmapInfo  info;
@@ -119,7 +116,8 @@ double DetectorUpdateForResult(JNIEnv* env,
     }
 
     AndroidBitmap_unlockPixels(env, bitmap);
-
+#endif
+  
     return likeDog;
 }
 

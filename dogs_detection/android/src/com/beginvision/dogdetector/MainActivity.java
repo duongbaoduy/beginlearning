@@ -16,6 +16,7 @@ import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Handler;
+import android.graphics.Color;
 import java.io.*;
 import android.util.*;
 import android.view.SurfaceView;
@@ -34,10 +35,13 @@ public class MainActivity extends Activity
     private ReentrantLock previewLock = new ReentrantLock();
     private CameraView cameraView = null;
     private OverlayView overlayView = null;
-    private Bitmap  resultBitmap = null;  
+    private TextView tv;
+    private Button btn;
     
-    private boolean doAction = true;
+    private Bitmap  helpBitmap = null;
+    private String myState = "INIT";
     private double detectResult = 0.0;
+
     //
     //  Activiity's event handler
     //
@@ -52,9 +56,8 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        TextView tv = (TextView)findViewById(R.id.tv_message);
-        tv.setText("将白框对准狗狗的脸, 按下检测按钮");
-        Button btn = (Button)findViewById(R.id.btn_control);
+        tv = (TextView)findViewById(R.id.tv_message);
+        btn = (Button)findViewById(R.id.btn_control);
         btn.setOnClickListener(controlAction);
         
         // init NativeAgent
@@ -93,12 +96,45 @@ public class MainActivity extends Activity
     public void onCameraReady() {
         cameraView.StopPreview();
         cameraView.setupCamera(640, 480, 4, previewCb);
-        resultBitmap = Bitmap.createBitmap(cameraView.Width(), cameraView.Height(), Bitmap.Config.ARGB_8888);
+        
+        helpBitmap = Bitmap.createBitmap(cameraView.Width(), cameraView.Height(), Bitmap.Config.ARGB_8888);
+        int rectangleSize = helpBitmap.getHeight()/2;
+        for(int x = (helpBitmap.getWidth() - rectangleSize)/2; x < (helpBitmap.getWidth() + rectangleSize)/2; x++) {
+            int y = (helpBitmap.getHeight() - rectangleSize)/2;
+            helpBitmap.setPixel(x, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x, y-1, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x, y+1, Color.argb(255, 255, 255, 255));
+            y = (helpBitmap.getHeight() + rectangleSize)/2;
+            helpBitmap.setPixel(x, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x, y-1, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x, y+1, Color.argb(255, 255, 255, 255));
+        }
+        for(int y = (helpBitmap.getHeight() - rectangleSize)/2; y < (helpBitmap.getHeight() + rectangleSize)/2; y++) {
+            int x = (helpBitmap.getWidth() - rectangleSize)/2;
+            helpBitmap.setPixel(x, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x-1, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x+1, y, Color.argb(255, 255, 255, 255));
+            x = (helpBitmap.getWidth() + rectangleSize)/2;
+            helpBitmap.setPixel(x, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x-1, y, Color.argb(255, 255, 255, 255));
+            helpBitmap.setPixel(x+1, y, Color.argb(255, 255, 255, 255));
+        }
+
+        new Handler(Looper.getMainLooper()).post( new Runnable() {
+                @Override 
+                public void run() {
+                    overlayView.DrawResult(helpBitmap);
+                    btn.setText("检测");
+                    tv.setText("将白框对准旺星人的脸,按下检测键");
+                }
+            });
+        
+        myState = "IDLE";
         cameraView.StartPreview();
     }
 
     public void onUpdateDone() {
-         
+           
     }
 
     //
@@ -124,16 +160,13 @@ public class MainActivity extends Activity
     };
 
     private void processNewFrame(final byte[] yuvFrame, final Camera c) {
-        if ( previewLock.isLocked() ) {
-            c.addCallbackBuffer(yuvFrame);
-            return;
-        }
-        if ( doAction == true) { 
-            doAction = false;
+        if ( myState == "WAIT") { 
+            myState = "DOING";
+            cameraView.StopPreview();
             new Thread(new Runnable() {
                         public void run() {
                             previewLock.lock(); 
-                            detectResult = NativeAgent.updatePictureForResult(yuvFrame, resultBitmap, cameraView.Width(), cameraView.Height());
+                            detectResult = NativeAgent.updatePictureForResult(yuvFrame, helpBitmap, cameraView.Width(), cameraView.Height());
                             c.addCallbackBuffer(yuvFrame);
                             new Handler(Looper.getMainLooper()).post( resultAction );
                             previewLock.unlock();
@@ -147,18 +180,34 @@ public class MainActivity extends Activity
     private Runnable resultAction = new Runnable() {
         @Override 
         public void run() {
-            overlayView.DrawResult(resultBitmap);
-            TextView tv = (TextView)findViewById(R.id.tv_message);
-            tv.setText("将白框对准狗狗的脸, 按下检测按钮, 当前检测分值:" + detectResult);
+            myState = "SHOW";
+            int score = (int)(detectResult * 100);
+            if ( score > 70) {
+                tv.setText("旺星人指数:" + score + "%, 必是旺星人");
+            } else if ( score > 50) {
+                tv.setText("旺星人指数:" + score + "%, 疑是旺星人");
+            } else {
+                tv.setText("旺星人指数:" + score + "%, 不是旺星人");
+            }
+            btn.setText("重新开始");
+            btn.setEnabled(true); 
         }
     };
 
     private OnClickListener controlAction = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            doAction = true; 
-            TextView tv = (TextView)findViewById(R.id.tv_message);
-            tv.setText("计算中....");
+            if ( myState == "IDLE" ) {
+                myState = "WAIT";
+                btn.setEnabled(false);
+                tv.setText("计算中...");
+            } else if (myState == "SHOW" ) {
+                myState = "IDLE";
+                btn.setText("检测");
+                tv.setText("将白框对准旺星人的脸,按下检测键");
+                cameraView.setupCamera(640, 480, 4, previewCb);
+                cameraView.StartPreview();
+            }
         }
     };
 
