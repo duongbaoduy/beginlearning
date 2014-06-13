@@ -126,6 +126,7 @@ public class MainActivity extends Activity
                     overlayView.DrawResult(helpBitmap);
                     btn.setText("检测");
                     tv.setText("将白框对准旺星人的脸,按下检测键");
+                    cameraView.AutoFocus();
                 }
             });
         
@@ -205,6 +206,7 @@ public class MainActivity extends Activity
                 myState = "IDLE";
                 btn.setText("检测");
                 tv.setText("将白框对准旺星人的脸,按下检测键");
+                cameraView.AutoFocus();
                 cameraView.setupCamera(640, 480, 4, previewCb);
                 cameraView.StartPreview();
             }
