@@ -1,4 +1,4 @@
-function [value] = predictImages(images);
+function [value C X] = predictImages(images);
 
 imageDim = 64;         % image dimension
 imageChannels = 3;     % number of channels (rgb, so 3)
@@ -21,6 +21,7 @@ convolvedFeatures = cnnConvolve(patchDim, hiddenSize, ...
 
 pooledFeatures = cnnPool(poolDim, convolvedFeatures);
 
+C = convolvedFeatures;
 
 load linearRegOptTheta.mat
 X = permute(pooledFeatures, [1 3 4 2]);

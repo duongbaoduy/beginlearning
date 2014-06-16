@@ -1,4 +1,4 @@
-function value = predictImageFile(fileName);
+%function value = predictImageFile(fileName);
 img = imread(fileName);
 img = im2double(img);
 if ( size(img,1) ~= 64 || size(img,2) ~= 64)
@@ -8,6 +8,6 @@ if ( size(img,1) ~= 64 || size(img,2) ~= 64)
 end
 images = zeros(64, 64, 3, 0);
 images(:,:,:,1) = img;
-value = predictImages(images);       
+[value  C X] = predictImages(images);       
 
-end
+%end

@@ -1,5 +1,4 @@
-
-lambda = 5;
+lambda = 1.5;
 
 load cnnPooledFeatures.mat;
 
