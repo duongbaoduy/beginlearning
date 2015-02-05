@@ -12,6 +12,5 @@ Beginlearning
 3. dogs_detection
     A CNN pratice project, detecting dogs' face in images.
 
-4. easy.js
-    A Javascript tool set for machine learning. 
-    see easy.js/README.md
+4. cs231n
+    http://vision.stanford.edu/teaching/cs231n/syllabus.html 
