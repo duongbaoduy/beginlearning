@@ -77,16 +77,13 @@ class KNearestNeighbor:
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train))
+
     for i in xrange(num_test):
-      #######################################################################
-      # TODO:                                                               #
-      # Compute the l2 distance between the ith test point and all training #
-      # points, and store the result in dists[i, :].                        #
-      #######################################################################
-      pass
-      #######################################################################
-      #                         END OF YOUR CODE                            #
-      #######################################################################
+      diffs = (self.X_train[:] - X[i])
+      diffs = diffs * diffs
+      diffs = np.sum(diffs, axis=1)
+      dists[i] = diffs
+
     return dists
 
   def compute_distances_no_loops(self, X):
@@ -107,10 +104,16 @@ class KNearestNeighbor:
     # HINT: Try to formulate the l2 distance using matrix multiplication    #
     #       and two broadcast sums.                                         #
     #########################################################################
-    pass
-    #########################################################################
-    #                         END OF YOUR CODE                              #
-    #########################################################################
+    xy =  X.dot( self.X_train.T);
+    xy = xy*-2;
+    xx = np.sum(X * X, axis=1);
+    yy = np.sum(self.X_train * self.X_train, axis=1);
+
+    xy[:] = xy[:] + yy;
+    xy = xy.T[:] + xx;
+
+    dists = xy.T;
+
     return dists
 
   def predict_labels(self, dists, k=1):
