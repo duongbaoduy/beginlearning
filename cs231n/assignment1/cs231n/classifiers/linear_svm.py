@@ -53,7 +53,8 @@ def svm_loss_naive(W, X, y, reg):
         continue
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
-        dW += X[:, i]
+        dW[j, :] += X[:, i] / num_train;
+        dW[y[i], :] -= X[:, i] / num_train;
 
   dW += W * reg;
 
@@ -74,7 +75,7 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  
+
 
 
   #############################################################################
