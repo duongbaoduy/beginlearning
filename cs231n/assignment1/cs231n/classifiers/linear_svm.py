@@ -76,7 +76,35 @@ def svm_loss_vectorized(W, X, y, reg):
   # result in loss.                                                           #
   #############################################################################
 
+  num_classes = W.shape[0]
+  num_train = X.shape[1]
+  loss = 0.0
+  margins = np.zeros((10, X.shape[1]));
 
+  allScores = W.dot(X)
+
+  for i in xrange(num_train):
+      margins[:, i] =  np.maximum(0, allScores[:, i] - allScores[y[i], i] +1)
+      margins[y[i], i] = 0
+
+      """
+      d = (margins[:,i] > 0).astype(int);
+      d[y[i]] = -1 * np.sum(d)
+      #for j in xrange(num_classes):
+      #dW[j,:] = dW[j,:] + d[j] * X[:, i] / num_train
+
+      xx = X[:, i].reshape()
+      print d.shape
+      print xx.shape
+      break
+      """
+
+
+  loss = np.sum(margins)
+  loss /= num_train
+  loss += 0.5 * reg * np.sum(W * W)
+
+  dW += W * reg
 
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -92,7 +120,7 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  pass
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
