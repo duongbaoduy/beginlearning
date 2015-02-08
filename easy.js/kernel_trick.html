@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>核技巧及其应用</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!-- 最新 Bootstrap 核心 CSS 文件 boostrap 3.0.3-->
+    <link rel="stylesheet" href="css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="css/lib/bootstrap-theme.min.css">
+    <!-- 本地CSS文件 -->
+    <link rel="stylesheet" href="css/mystyle.css">
+</head>
+<body>
+
+<xmp theme="cerulean" style="display:none;">
+
+### 1. 在L2线性模型中引入核函数
+
+#### 1.1 引入核函数的关键
+
+对于一个L2的线性模型（PLA，Logisitic, SVM) 可以重现整理为：
+
+$$
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{w} ( \frac{\lambda}{N}w^Tw + \frac{1}{N} err(y_n, w^Tx_n) )
+$$
+
+其中错误函数包括：
+* PLA(感知机模型)错误模型： L1错误
+* Logistic 模型：对数错误
+* SVM: 折线错误
+
+可以证明为了最优化上面的函数，w的解一定属于样本空间，即w可以由样本线性张成，即最优的$w^{*}$可以表示为：
+$$
+w^{*} = \sum \alpha_n x_n
+$$
+因为w是由样本x构成，因此后续计算都可以在核函数下进行，不会出现独立的样本计算。
+
+证明如下：
+
+![L2线性模型中的核技巧](img/kernel_l2.png)
+
+### 2. kernel版本的Logistic回归
+
+![kernel化的Logisitic](img/kernel_logistic.png)
+
+
+### 3. Kernel Ridge Regressive
+
+![Kernel Ridge Regressive](img/kernel_ridge_regressive.png)
+
+
+</xmp>
+
+
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 Jquery 1.10.2, bootstrap 3.0.3-->
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/bootstrap.min.js"></script>
+<script src="js/lib/d3.v3.min.js"></script>
+<script src="vendor/strapdown/strapdown.min.js"></script>
+<script src="js/elj/elj_top.js"></script>
+<script src="js/elj/elj_util.js"></script>
+
+
+<script type="text/javascript">
+<!-- 主函数 -->
+$(document).ready(function() {
+
+});
+</script>
+</body>
+</html>

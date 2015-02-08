@@ -12,5 +12,5 @@ Beginlearning
 3. dogs_detection
     A CNN pratice project, detecting dogs' face in images.
 
-4. cs231n
-    http://vision.stanford.edu/teaching/cs231n/syllabus.html 
+4.  easy.js
+    A pratices and document for learning based javascript.

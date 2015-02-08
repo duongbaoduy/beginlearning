@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>线性回归笔记</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!-- 最新 Bootstrap 核心 CSS 文件 boostrap 3.0.3-->
+    <link rel="stylesheet" href="css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="css/lib/bootstrap-theme.min.css">
+    <!-- 本地CSS文件 -->
+    <link rel="stylesheet" href="css/mystyle.css">
+</head>
+<body>
+
+<xmp theme="cerulean" style="display:none;">
+
+## Linear Regression
+
+### 0. Supervised learning
+
+给定n个训练样本 $(x^{i}, y^{i})$ , y 如果是离散值为分类问题；如果y是实数为回归问题。
+
+### 1. Hypotheses
+
+使用最简单的线性模型：
+
+$$
+h_{\theta}(x)=\sum_{i=0}^{n}(\theta_ix_i) = \theta^Tx, x_{0} = 1
+$$
+
+ **注意**:输入维度为n-1,默认 $x_{0}$为1.
+
+为了实现拟合更多的分线性特征，我们可以把部分的特征维度的高次项作为新输入特征维度。
+
+$$
+( x_1, x_2, ... , x_n) => (x_1, x_2, ..., x_n, x_1^2, x_2^2, ..., x_n^2)
+$$
+
+### 2. Cost function
+
+$$
+J(\theta)=\frac{1}{2}\sum_{i=1}^{m}(h_{\theta}(x^{(i)})-y^{(i)})^{2}
+$$
+
+目标就是在训练样本中求解出向量 $\theta$ 最小化cost funtion.
+
+### 3. Algorithm
+
+#### 3.1 直接求解，通过向量的方法
+
+$$
+  \begin{bmatrix} x_0^{(1)} & x_1^{(1)} & ... & x_n^{(1)} \\\ x_0^{(2)} & x_1^{(2)} & ... & x_n^{(2)}  \\\ | & | & ... & | \\\ x_0^{(m)} & x_1^{(m)} & ... & x_n^{(m)}  \end{bmatrix}
+  \begin{bmatrix} \theta_0 \\\ \theta_1 \\\ ... \\\ \theta_n \end{bmatrix} \approx
+  \begin{bmatrix} y^{(1)} \\\ y^{(2)} \\\ ... \\\ y^{(m)} \end{bmatrix}
+$$
+
+从上面的矩阵可以看出，我们从列空间的寻找一个向量，这个向量和y组成的向量最近。列空间中最接近y是y的投影，因此可以通过直接求解投影矩阵来得到。
+
+$$ \theta = (X^TX)^{-1}X^T\overrightarrow{y} $$
+
+#### 3.2 Gradient descent
+
+在直接求解的算法中，当特征维度比较大的时候，求解逆矩阵，计算量过大。为了最小化的Cost Function, 可以根据函数在 $\theta$ 变量的变化速度通过迭代来求解。
+
+* Batch Gradient Descent
+
+每一次迭代，更新全部样本的梯度均值：
+
+$$
+\theta_j := \theta_j + \alpha \sum_{i=1}^{m}((y^{(i)} - h_{\theta}(x^{(i)})x_j^{(i)}) , j = 0...n
+$$
+
+* Stochastic Gradient Descent
+
+每一次迭代，选择一个样本的更新梯度：
+
+$$
+\theta_j := \theta_j + \alpha (y^{(i)} - h_{\theta}(x^{(i)})x_j^{(i)}), i =1...m, j = 0...n
+$$
+
+* Newton’s method , 拟牛顿法
+
+
+### 4. Practice
+
+下面的例子是一个应用SGD算法例子。
+
+<div class="panel">
+    <div class="btn-toolbar" role="toolbar">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-warning" id="btnRest1">重置(1阶)</button>
+        <button type="button" class="btn btn-warning" id="btnRest2">重置(2阶)</button>
+        <button type="button" class="btn btn-warning" id="btnRest3">重置(11阶)</button>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-primary" id="btnRegressive">回归计算</button>
+      </div>
+    </div>
+    <div class="well" style="margin-top:5px;">
+      <div id="dataFrame" style="width:512px;height:512px:margin:0px">
+      </div>
+    </div>
+</div>
+
+
+### 5. 分析
+
+#### 5.1 概率分析
+
+$$
+y^{(i)} = \theta^{T}x^{(i)} +  \epsilon^{(i)}
+$$
+
+另外假设，没个误差项符合高斯分布：
+
+$$
+p(\epsilon^{(i)}) =  \frac {1}{\sqrt{2\pi}\sigma} exp(-\frac{(\epsilon^{(i)})^2}{2\sigma^2})
+$$
+
+
+在这个架设的模型下，对某一个样本得到概率分布：
+
+$$
+p(y^{(i)} | x^{(i)};\theta) = \frac {1}{\sqrt{2\pi}\sigma} exp(-\frac{(y^{(i)}-\theta^{T}x^{(i)})^2}{2\sigma^2})
+$$
+
+
+因此对观察到全部样本，由于IID的假设，总体概率是由上面每个样本的概率项的乘积：
+
+$$
+L(\theta) = \prod_{i=1}^{m} p(y^{(i)} | x^{(i)};\theta)
+          = \prod_{i=1}^{m} \frac {1}{\sqrt{2\pi}\sigma} exp(-\frac{(y^{(i)}-\theta^{T}x^{(i)})^2}{2\sigma^2})
+$$
+
+“maximum likelihood” 原则认为，在样本基础上，应该选择参数使得 $L(\theta)$ 值最大。为了求出最大值的$L(\theta)$, 可以通过对数下的最大值。
+
+
+$$
+l(\theta) = log (L(\theta)) = log \prod_{i=1}^{m} \frac {1}{\sqrt{2\pi}\sigma} exp(-\frac{(y^{(i)}-\theta^{T}x^{(i)})^2}{2\sigma^2})
+= \sum_{i=1}^{m} log \frac {1}{\sqrt{2\pi}\sigma} exp(-\frac{(y^{(i)}-\theta^{T}x^{(i)})^2}{2\sigma^2})
+$$
+
+继续简化上面的公式：
+
+$$
+l(\theta) ＝ m log \frac {1}{\sqrt{2\pi}\sigma} \frac{-1}{\sigma^2} \frac{1}{2}  \sum_{i=1}^{m} (y^{(i)}-\theta^{T}x^{(i)})^2
+$$
+
+因此为了最大化$l(\theta)$, 必须最小化前面的Cost Function.
+
+
+#### 5.2 locally weighted linear regression 算法
+
+局部权重线性回归算法和基本线性回归是一致的，计算需要进行回归预测的值x的时候，根据x的位置重新计算$\theta$, 每次计算的时候Cost Function要计入权重。
+
+$$
+J(\theta)=\frac{1}{2}\sum_{i=1}^{m}(w^{(i)}h_{\theta}(x^{(i)})-y^{(i)})^{2}
+$$
+
+其中是根据新预测值x计算的，权重值计算如下：
+
+$$
+w^{(i)} = exp( \frac{(x^{(i)}-x)^2}{2\tau^2})
+$$
+
+</xmp>
+
+
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/bootstrap.min.js"></script>
+<script src="js/lib/d3.v3.min.js"></script>
+<script src="vendor/strapdown/strapdown.min.js"></script>
+<script src="js/linear_regressive.js"></script>
+
+<script type="text/javascript">
+
+var guiInit = function() {
+
+  svg = d3.select("#dataFrame").append("svg")
+      .attr("width",  512)
+      .attr("height", 512);
+
+  xScale = d3.scale.linear().domain([-1, 1]).range([0, 512]);
+  yScale = d3.scale.linear().domain([1, -1]).range([0, 512]);
+
+  var xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
+      yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(-1, 255)")
+      .call(xAxis);
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(255, -1)")
+      .call(yAxis);
+
+  // 事件
+  document.getElementById("dataFrame").addEventListener('click', ui.onFrameClick, false);
+  $("#btnRest1").click(ui.onReset(1));
+  $("#btnRest2").click(ui.onReset(2));
+  $("#btnRest3").click(ui.onReset(11));
+  $("#btnRegressive").click(ui.onRegressive);
+
+}
+
+var lr = undefined;
+var ui = {};
+ui.onReset = function(d) {
+  return function() {
+    svg.selectAll("circle").remove();
+
+    lr = new LinearRegressive(d);
+    lr.reset();
+  };
+
+};
+
+ui.onRegressive = function() {
+
+  lr.sgd(5000, 0.1);
+
+  var xx = -1;
+  for(; xx <= 1; xx += 0.02) {
+    var x = xScale( xx);
+    var y = yScale( lr.value(xx));
+
+    svg.append("circle")
+      .attr("class", "dot")
+      .attr("r", 1.0)
+      .attr("cx", x)
+      .attr("cy", y);
+  }
+
+};
+
+ui.onFrameClick = function(evt) {
+  var rect = this.getBoundingClientRect();
+  var x = evt.clientX - rect.left;
+  var y = evt.clientY - rect.top;
+
+  var xx = xScale.invert(x);
+  var yy = yScale.invert(y);
+
+  var circle = svg.append("circle")
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", x)
+        .attr("cy", y)
+        .style("fill", "lightgreen");
+
+  lr.samples.push({'x':xx, 'y':yy });
+};
+
+<!-- 主函数 -->
+$(document).ready(function() {
+  guiInit();
+
+  lr = new LinearRegressive(1);
+});
+
+</script>
+</body>
+</html>

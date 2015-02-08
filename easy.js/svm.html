@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>SVM笔记</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!-- 最新 Bootstrap 核心 CSS 文件 boostrap 3.0.3-->
+    <link rel="stylesheet" href="css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="css/lib/bootstrap-theme.min.css">
+    <!-- 本地CSS文件 -->
+    <link rel="stylesheet" href="css/mystyle.css">
+</head>
+<body>
+
+<xmp theme="cerulean" style="display:none;">
+
+### 1. Large-Margin Separating Hyperplane
+
+还是线性模型，考虑分类平面 $W^Tx+b=0$, 在平面+值的一侧输出1, 在平面-值的一侧输出为-1。
+
+如果最大化所有样本到这个平面的最小距离，显然是一个好的分类平面。
+
+* 所有样本可以包含更多的噪声
+* 分类具有更好的鲁棒性，降低overfitting的可能性
+
+![svm 最大间隔分类平面](img/svm_large_margin.png)
+
+#### 1.1 如何计算样本到分类平面的距离？
+
+首先需要理解$w$是垂直于分类平面的，为什么？考虑向量$x_1,x_2$, 同时都满足$w^tx_1+b=0, w^tx_2+b=0$,
+因此$w^T(x_1-x_2)＝0$,而$(x_1-x_2)$是平行于平面的，两个向量的内积为0，表明两个向量垂直。
+
+如果计算距离可以参考下图：
+
+![svm 几何间隔计算](img/svm_geometric_margin.png)
+
+如上图所示，向量C落在平面上的，即 $w^Tx_c+b=0$, 向量A'和W是平行，同时垂直于平面，设向量A'的长度为d, 则A'的方向为W的相反，因此A'可以表示为：
+
+$$
+A' = d \frac {-w}{\left|w\right|}
+$$
+
+其中$\frac {-w}{\left|w\right|}$决定方向的单位向量，d 表示长度。带入向量C，可以得到：
+
+$$
+w^T(x_a+d \frac {-w}{\left|w\right|})+b=0
+$$
+
+通过这个等式，可以得到长度d为：
+
+$$
+d = \frac{w^tx_a+b}{\left|w\right|}
+$$
+
+#### 1.2 最大化硬间隔
+
+根据上面的定义，我们需要找到参数w,b，使得样本中最小间隔最大，即：
+
+$$
+argMax_{(w,b)} = margin(w,b)
+$$
+需要满足条件项目
+$$
+y_n(w^tx_n+b)>0 , margin(w,b) = min \frac{1}{\left|w\right|}y_n(w^tx_n+b),  n=1...N
+$$
+
+由于平面$w^Tx+b$ 和 $3w^t+3b$ 是同一个平面，因此我们可以约定$y_n(w^tx_n+b)$在样本中最小值为1，因此最小间隔为 $\frac{1}{\left|w\right|}$
+
+$$
+argMax_{(w,b)} = \frac{1}{\left|w\right|}
+$$
+必须满足
+$$
+min(y_n(w^tx_n+b)) = 1
+$$
+
+上面的最优化，最后可以简化为，很容易理解。
+
+$$
+argMin_{(w,b)} = \frac{1}{2}w^Tw
+$$
+必须满足
+$$
+y_n(w^tx_n+b) >= 1 , n = 1...N
+$$
+
+#### 1.3 最大软间隔
+
+最大硬间隔的模型中约束条件不允许出现分割平面分错的情况，在很多情况下无法使用，因此必须允许分错的情况，但要要约束分错最小。
+
+* 最大软间隔模型
+$$
+argMin_{(w,b,\xi)} = \frac{1}{2}w^Tw + C \sum_{n=1}^N \xi_{n}
+$$
+必须满足
+$$
+y_n(w^tx_n+b) >= 1 - \xi_{n}  , \xi_{n} >= 0, n = 1...N
+$$
+
+![svm 软件间隔计算](img/svm_soft_margin.png)
+
+注意最大软间隔模型是可以通过二次规划软件来直接求解的，但是存在一个问题，即二次规划求解的变量是和样本的维度相关的，
+这样就限制我们的应用，特别是特征空间扩展到非常大维度的时候。
+
+#### 1.4 最大软间隔的对偶问题
+
+通过Lagrange 乘数，可以将上面的带约束的最优化问题，转化为一个新的对偶最优化问题：
+
+$$
+l(b,w,\xi,\alpha,\beta) = \frac{1}{2}w^Tw + C \sum_{n=1}^N \xi_{n} + \sum_{n=1}^N\alpha_n(1-\xi_n-y_n(w^tx_n+b))
+                          + \sum_{n=1}^N \beta_n (-\xi_n)
+$$
+
+对偶问题的最优化目标是：
+
+$$
+\newcommand{\argmax}{\mathop{\rm arg~max}\limits}
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmax_{\alpha_n>=0,\beta_n>=0} ( \argmin_{b,w,\xi_n>=0} l(b,w,\xi,\alpha,\beta) )
+$$
+
+通过一系列的化简，可以得到下面的最优问题
+
+$$
+\newcommand{\argmax}{\mathop{\rm arg~max}\limits}
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{C>=\alpha_n>=0, \sum_{n=1}^N \alpha_ny_n = 0} ( \frac{1}{2} \sum_{n=1}^N \sum_{m=1}^N \alpha_n\alpha_my_ny_mx_n^Tx_m - \sum_{n=1}^N \alpha_n )
+$$
+
+其中隐藏的关系：
+
+$$
+w = \sum_{n=1}^N \alpha_ny_nx_n, \beta_n=C-\alpha_n
+$$
+
+我们观察这个最优化问题，我们发现x的维度消失了，只剩下N个变量，2N个约束条件。这个问题可以通过二次规划问题来进行求解。
+当得到$\alpha_n$的值之后，马上就可以解得w, 另外也可以得到$\beta_n$的值。此外由于乘数＝0，可以进一步得到$\xi_n, b$的值。
+在得到w,b值之后，我们可以构造一个分类平面，处理未知样本了。
+
+
+### 2. 完整的SVM算法
+
+#### 2.1 SVM模型描述：
+
+$$
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{\alpha_n} ( \frac{1}{2} \sum_{n=1}^N \sum_{m=1}^N \alpha_n\alpha_my_ny_mx_n^Tx_m - \sum_{n=1}^N \alpha_n )
+$$
+同时满足两个约束条件
+
+$$
+C\geq\alpha_n\geq0 \\
+\sum_{n=1}^N \alpha_ny_n = 0
+$$
+
+在求解出$\alpha_n, n=1...N$之后，通过如下公式计算w
+
+$$
+w = \sum_{n=1}^N \alpha_ny_nx_n
+$$
+
+对于b，有多个可能的解，选择一个$C>\alpha_j>0$, 根据KTT条件，必须满足：
+
+$$
+C>\alpha_j>0 \\
+\alpha_j(1-\xi_j-y_j(w^Tx_j+b)) = 0 \\
+(C-\alpha_j)\xi_j = 0
+$$
+
+从上面可以看出$\xi_j = 0$, $(1-\xi_j-y_j(w^Tx_j+b) = 0$, 因此可以求解出b:
+
+$$
+(1-\xi_j-y_j(w^Tx_j+b) = 0 \\
+\Rightarrow \: y_j(w^Tx_j+b) = 1 \\
+\Rightarrow \: b = y_j - w^Tx_j
+$$
+
+#### 2.2 SVM支撑向量
+
+对于不同$\alpha_n$的值，具有不同几何意义：
+
+* $\alpha_n = 0$, 表示$\xi_n = 0$, 样本被正确分类，且不在边界上。
+* $C>\alpha_n > 0$, 其中$\xi_n=0$, 样本被正确分类，但是在分类边界上，即为支撑向量
+* $C = \alpha_n$, 其中$\xi_n > 0$, 当$\xi_n > 1$的时候，表示错误分类，$\xi_n < 1$ 表示正确分类
+
+![svm 支撑向量](img/svm_support_vectors.png)
+
+#### 2.3 SMO 算法
+
+对于求解SVM, 除了使用二次规划软件包来求解之外，还有一种更加快速的求解方法，即SMO算法。
+SMO算法采用的思路是满足约束条件的情况下，通过迭代的方法，每次选择$\alpha$集合中两个变量修改他们的值，
+使得目标函数向更小的方向更新。
+
+### 3. SVM中引入核技巧
+
+#### 3.1 核函数
+
+在SVM模型中（对偶模型），所有有关样本的计算只出现了<.>内积操作，因此可以引入核技巧，提升样本特征空间的维度，使得SVM具备很强的分类能力。
+
+** 核函数：维度变换后的内积 **
+
+$$
+k(x,x') = \phi(x)^T \phi(x')
+$$
+
+核函数必须满足Mercer条件，任意取N个x, 构造核函数矩阵：
+
+$$
+\begin{bmatrix}
+\phi(x_1)^T \phi(x_1) & \phi(x_1)^T \phi(x_2) & ... & \phi(x_1)^T \phi(x_N) \\
+\phi(x_2)^T \phi(x_1) & \phi(x_2)^T \phi(x_2) & ... & \phi(x_2)^T \phi(x_N) \\
+... \\
+\phi(x_N)^T \phi(x_1) & \phi(x_N)^T \phi(x_2) & ... & \phi(x_N)^T \phi(x_N) \\
+\end{bmatrix}
+$$
+这个矩阵是对称且半正定的。
+
+常用的核函数包括：
+
+* 线性核：    $K(x,x') = x^Tx'$
+* 多项式核：  $K(x,x') = (a+bx^Tx)^c$
+* 高斯核：    $K(x,x') = exp(-\gamma|x-x'|^2)$
+
+
+#### 3.2 使用核函数的SVM
+
+模型中的求解目标变为：
+
+$$
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{\alpha_n} ( \frac{1}{2} \sum_{n=1}^N \sum_{m=1}^N \alpha_n\alpha_my_ny_mK(x_n,x_m) - \sum_{n=1}^N \alpha_n )
+$$
+同时满足两个约束条件
+
+$$
+C\geq\alpha_n\geq0 \\
+\sum_{n=1}^N \alpha_ny_n = 0
+$$
+
+同样在求解到$\alpha_n$值之后，不直接求解w的值，而是直接带入新的x进行计算，不需要（某些情况也做不到）保存W
+
+$$
+h(x') = \sum_{n=1}^N \alpha_ny_nk(x_n,x') + b
+$$
+
+其中b的计算也是通过核函数完成，选择一个自由项$\alpha_j$,
+
+$$
+b = y_j - \sum_{n=1}^N \alpha_ny_nk(x_n,x_j)
+$$
+
+### 4 Practice
+
+<div class="panel">
+    <div class="btn-toolbar" role="toolbar">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-warning" id="btnRest1">清除</button>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-info" id="btnLabel0">负样本(0)</button>
+        <button type="button" class="btn btn-info" id="btnLabel1">正样本(1)</button>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-primary" id="btnRegressive">回归计算</button>
+      </div>
+    </div>
+    <div class="well" style="margin-top:5px;">
+      <div id="dataFrame" style="width:512px;height:512px:margin:0px">
+      </div>
+    </div>
+</div>
+
+### 5. More about SVM
+
+#### 5.1 SVM as Regularized Model
+
+* SVM 原始模型
+
+$$
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{w,b,\xi_n} ( \frac{1}{2}  w^Tw + C \sum_{n=1}^N \xi_n )
+$$
+
+同时满足约束条件
+$$
+y_n(w^Tx_n+b) \geq  1- \xi_n \\
+\Rightarrow \xi_n = \max (1 - y_n(w^Tx_n+b), 0)
+$$
+
+这样SVM原始模型可以改写为：
+
+$$
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\argmin_{w,b,\xi_n} ( \frac{1}{2}  w^Tw + C \sum_{n=1}^N  \max (1 - y_n(w^Tx_n+b), 0) )
+$$
+
+这时模型就可以带正则化项目的线性回归非常一致了，不过错误函数使用的是折线函数。
+
+![svm 与 L2 比较](img/svm_vs_regularization.png)
+
+SVM ≈ L2-regularized logistic regression
+
+#### 5.2 概率版本的SVM
+
+原始SVM版本输出的是0,1, 用分割平面的正负来进行判断，但是我们常常需要一个概率的输出。
+最简单的办法就是利用SVM分割面距离的输出，二次训练一个Logistic回归模型。
+
+![svm 概率输出](img/svm_probabilistic.png)
+
+
+
+</xmp>
+
+
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 Jquery 1.10.2, bootstrap 3.0.3-->
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/bootstrap.min.js"></script>
+<script src="js/lib/d3.v3.min.js"></script>
+<script src="vendor/strapdown/strapdown.min.js"></script>
+<script src="js/elj/elj_top.js"></script>
+<script src="js/elj/elj_util.js"></script>
+<script src="js/elj/elj_gd.js"></script>
+<script src="js/elj/elj_svm.js"></script>
+
+<!-- 主函数 -->
+<script type="text/javascript">
+var guiInit = function() {
+
+  var w = 512,
+      h = 512;
+
+
+  svg = d3.select("#dataFrame").append("svg")
+      .attr("width",  w)
+      .attr("height", h);
+
+  xScale = d3.scale.linear().domain([-1, 1]).range([0, 512]);
+  yScale = d3.scale.linear().domain([1, -1]).range([0, 512]);
+
+  var xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
+      yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(-1, 255)")
+      .call(xAxis);
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(255, -1)")
+      .call(yAxis);
+
+
+  svg.append("rect")
+     .attr("x", w - 18)
+     .attr("y", 20)
+     .attr("width", 18)
+     .attr("height", 18)
+     .style('fill', 'red');
+  svg.append("text")
+     .attr("x", w - 72)
+     .attr("y", 30)
+     .text('False: 0');
+
+  svg.append("rect")
+     .attr("x", w - 18)
+     .attr("y", 40)
+     .attr("width", 18)
+     .attr("height", 18)
+     .style('fill', 'green');
+  svg.append("text")
+     .attr("x", w - 72)
+     .attr("y", 50)
+     .text('True: 1');
+
+  // 事件
+  document.getElementById("dataFrame").addEventListener('click', ui.onFrameClick, false);
+  $("#btnRest1").click(ui.onReset(1));
+  $("#btnRest2").click(ui.onReset(2));
+
+  $("#btnLabel0").click(ui.onLabel(0));
+  $("#btnLabel1").click(ui.onLabel(1));
+
+  $("#btnRegressive").click(ui.onRegressive);
+}
+
+var samples = undefined;
+var currentLabel = 0;
+var ui = {};
+
+ui.onReset = function(control) {
+  return function() {
+    svg.selectAll("circle").remove();
+    samples = elj.util.zeroSamples(2, 2);  // 2分类；2输入空间
+  };
+};
+
+ui.onLabel = function(l) {
+  return function() {
+    currentLabel = l;
+  };
+};
+
+
+ui.onRegressive = function() {
+  var localSamples = elj.util.copySamples(samples);
+
+  var svm = new elj.SVM(localSamples, {C:32.0} );
+  svm.train(5000);
+
+  //得到模型值之后，计算分界线
+  var coverSamples = elj.util.zeroSamples(2,2);
+
+  for (var x = -1.0; x < 1.0; x += 0.01 ) {
+      for (var y = -1.0; y < 1.0; y += 0.01 ) {
+          var d = [];
+          d.push(-1);
+          d.push(x);
+          d.push(y);
+          coverSamples.d.push(d);
+      }
+  }
+
+  for (var i = 0; i < coverSamples.d.length; i++) {
+      var ret = svm.pred( coverSamples.d[i] );
+      if ( Math.abs(ret) < 0.01 ) {
+
+          var xx = xScale( coverSamples.d[i][1] );
+          var yy = yScale( coverSamples.d[i][2] );
+
+          svg.append("circle")
+            .attr("class", "dot")
+            .attr("r", 1.0)
+            .attr("cx", xx)
+            .attr("cy", yy);
+      }
+  }
+
+};
+
+
+ui.onFrameClick = function(evt) {
+  var rect = this.getBoundingClientRect();
+  var x = evt.clientX - rect.left;
+  var y = evt.clientY - rect.top;
+
+  var xx = xScale.invert(x);
+  var yy = yScale.invert(y);
+
+  var circle = svg.append("circle")
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", x)
+        .attr("cy", y)
+        .style("fill", currentLabel === 1 ?"lightGreen":"red");
+
+  samples.d.push([currentLabel, xx, yy]);
+
+};
+
+
+
+<!-- 主函数 -->
+$(document).ready(function() {
+  guiInit();
+  samples = elj.util.zeroSamples(2, 2);
+
+});
+</script>
+</body>
+</html>
