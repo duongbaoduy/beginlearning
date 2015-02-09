@@ -59,8 +59,8 @@
 
     util.zeroSamples = function(i, o, number) {
       var samples = {};
-      samples.o = 1;    // 0: unsupervized; 1: regssive: 2: binary class;
-      samples.i = 2;
+      samples.o = o;    // 0: unsupervized; 1: regssive: >= 2: classify;
+      samples.i = i;
       samples.d = [];
 
       if (number !== undefined) {
