@@ -23,14 +23,16 @@
             }
             util._buildComb(allMap, combin, i);
         }
+
         for(i in allMap) {
             combin = JSON.parse("[" + i + "]");
             samples.i ++;
+            
             for(j = 0; j < samples.d.length; j++) {
                 v = 1.0;
                 for(k = 0; k < combin.length; k++) {
                     for (l = 0; l < combin[k]; l++) {
-                        v = v * samples.d[j][ samples.o + k];
+                        v = v * samples.d[j][ 1 + k];
                     }
                 }
                 samples.d[j].push(v);
