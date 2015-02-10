@@ -257,19 +257,10 @@ ui.onRegressive = function() {
   }
 
   var logistic = new elj.Logistic(localSamples, currentLambda);
-  var sgd = new elj.SGD(5000, 0.5);
-  var currentValue = logistic.cost();
-  sgd.train(logistic, function(value) {
-      /*
-      if ( Math.abs(value - currentValue ) < 0.00001) {
-          console.log(">>>>>>>>>>>:" + value);
-          return true;
-      }
-      currentValue = value;
-      return false;
-      */
-      return false;
-  });
+  var sgd = new elj.SGD(0.5);
+  for(var i = 0; i < 10000; i++) {
+    sgd.train(logistic);
+  }
 
   //得到模型值之后，计算分界线
   var coverSamples = elj.util.zeroSamples(2,2);

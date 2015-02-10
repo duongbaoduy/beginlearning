@@ -7,8 +7,6 @@
       this.x = [];
       this.y = [];
       
-      this._scores = [];
-
       if ( lambda !== undefined ) {
           this.lambda = lambda;
       }
@@ -28,13 +26,6 @@
             this.theta.push(Math.random() * 0.0001);
         }
         
-        for (i = 0; i < this.x.length; i++) {
-            var s = [];
-            for (j = 0; j < this.classNumber; j++) {
-                s.push(0.0);
-            }
-            this._scores.push(s);
-        }
       }.bind(this);
 
       this.pred = function(sample) {
@@ -62,12 +53,14 @@
         var reg = 0.0;
 
         var i,c;
+        
+        var scores = [];
         for (i = 0; i < this.x.length; i++) {
             for (c = 0; c < this.classNumber; c++) {
-              this._scores[i][c] = this._linear(this.x[i], c);
+              scores[c] = this._linear(this.x[i], c);
             }
             for (c = 0; c < this.classNumber; c++) {
-              margin = this._scores[i][c] - this._scores[i][this.y[i]] + 1;
+              margin = scores[c] - scores[this.y[i]] + 1;
               if (margin > 0.0 && c !== this.y[i]) {
                 totalMargin = totalMargin + margin;
               }
@@ -88,15 +81,19 @@
 
       this.sGrad = function(index) {
         var gtheta = [];
+        var scores = [];
         var i,c;
         var margin;
 
         for (i = 0; i < this.classNumber * this.featureNumber; i++) {
-          gtheta.push( this.theta[i] * this.lambda );
+            gtheta.push( this.theta[i] * this.lambda );
+        }
+        for (c = 0; c < this.classNumber; c++) {
+            scores[c] = this._linear(this.x[index], c);
         }
         
         for (c = 0; c < this.classNumber; c++) {
-            margin = this._scores[index][c] - this._scores[index][this.y[index]] + 1;
+            margin = scores[c] - scores[this.y[index]] + 1;
             if (margin > 0.0 && c !== this.y[index]) {
                 for(i = 0; i < this.featureNumber; i++) {
                     gtheta[c*this.featureNumber + i] = gtheta[c*this.featureNumber + i]
