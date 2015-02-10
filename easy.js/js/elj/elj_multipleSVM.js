@@ -6,7 +6,7 @@
       this.theta = [];
       this.x = [];
       this.y = [];
-      
+
       if ( lambda !== undefined ) {
           this.lambda = lambda;
       }
@@ -25,7 +25,7 @@
         for (i = 0; i < this.classNumber * this.featureNumber; i++) {
             this.theta.push(Math.random() * 0.0001);
         }
-        
+
       }.bind(this);
 
       this.pred = function(sample) {
@@ -53,7 +53,7 @@
         var reg = 0.0;
 
         var i,c;
-        
+
         var scores = [];
         for (i = 0; i < this.x.length; i++) {
             for (c = 0; c < this.classNumber; c++) {
@@ -78,6 +78,41 @@
         return totalMargin;
       }.bind(this);
 
+      this.bGrad = function(batch, gtheta) {
+        var i, j, c;
+        var index;
+        var scores = [];
+
+        // 初始化gtheta
+        if ( gtheta === undefined) {
+          gtheta = [];
+        }
+        for (i = 0; i < this.classNumber * this.featureNumber; i++) {
+            gtheta[i] = this.theta[i] * this.lambda;
+        }
+
+        for(i = 0; i < batch.length; i++) {
+          index = batch[i];
+          for (c = 0; c < this.classNumber; c++) {
+              scores[c] = this._linear(this.x[index], c);
+          }
+
+          for (c = 0; c < this.classNumber; c++) {
+              margin = scores[c] - scores[this.y[index]] + 1;
+              if (margin > 0.0 && c !== this.y[index]) {
+                  for(i = 0; i < this.featureNumber; i++) {
+                      gtheta[c*this.featureNumber + i] = gtheta[c*this.featureNumber + i]
+                                                         + this.x[index][i] / this.x.length;
+
+                      gtheta[this.y[index]*this.featureNumber + i] = gtheta[this.y[index]*this.featureNumber + i]
+                                                         - this.x[index][i] / this.x.length;
+                  }
+              }
+          }
+        }
+
+        return gtheta;
+      };
 
       this.sGrad = function(index) {
         var gtheta = [];
@@ -91,7 +126,7 @@
         for (c = 0; c < this.classNumber; c++) {
             scores[c] = this._linear(this.x[index], c);
         }
-        
+
         for (c = 0; c < this.classNumber; c++) {
             margin = scores[c] - scores[this.y[index]] + 1;
             if (margin > 0.0 && c !== this.y[index]) {
@@ -104,7 +139,7 @@
                 }
             }
         }
-        
+
         return gtheta;
       }.bind(this);
 

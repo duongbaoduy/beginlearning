@@ -9,6 +9,24 @@
     <link rel="stylesheet" href="css/lib/bootstrap-theme.min.css">
     <!-- 本地CSS文件 -->
     <link rel="stylesheet" href="css/mystyle.css">
+    <style>
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .x.axis path {
+        display: none;
+      }
+
+      .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+      }
+    </style>
 </head>
 <body>
 
@@ -78,16 +96,55 @@ function loadScript(url, doneCallback, errorCallBack) {
     head.appendChild(script);
 }
 
+
+
 var guiInit = function() {
+
+  var margin = {top: 20, right: 10, bottom: 10, left: 30};
 
   svg = d3.select("#trainingFrame").append("svg")
       .attr("width",  512)
-      .attr("height", 512);
+      .attr("height", 512)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  svg = svg;
+
+  xScale = d3.scale.linear()
+      .domain([0, 5100]).range([0, 512]);
+
+  yScale = d3.scale.linear()
+      .domain([16, 0]).range([0, 512]);
+
+
+  var xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left");
+
+  svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0, 470)")
+    .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Cost");
 
   $("#btnLoadData").click(ui.onLoadData);
   $("#btnShowData").click(ui.showData);
   $("#btnTrain").click(ui.doTrain);
-}
+
+
+};
 
 var d = {};
 d.trainSamples = elj.util.zeroSamples(32*32*3, 3);
@@ -109,6 +166,9 @@ d.loadSamples2 = function() {
   for (var i = 0; i < sampleBatch.length; i++) {
     var data = [];
     data.push(sampleBatch[i].label);
+    for(var j = 0; j < sampleBatch[i].data.length; j++) {
+      sampleBatch[i].data[j] = (sampleBatch[i].data[j] - 128) / 128.0;
+    }
     data = data.concat(sampleBatch[i].data);
     d.verifySamples.d.push(data);
   }
@@ -123,7 +183,6 @@ ui.onLoadData = function() {
   loadScript("./data/cifar_train_1.js", function() {
       console.log("完成数据加载1");
       d.loadSamples();
-      /*
       loadScript("./data/cifar_train_2.js", function() {
           console.log("完成数据加载2");
           d.loadSamples();
@@ -143,19 +202,12 @@ ui.onLoadData = function() {
                           console.log("测试样本数目：" + d.verifySamples.d.length);
 
                           $("#btnLoadData").html("加载数据完毕！");
-
                           $("#btnShowData").prop('disabled', false);
                       });
                   });
               });
           });
       });
-      */
-
-      $("#btnLoadData").html("加载数据完毕！");
-
-      $("#btnShowData").prop('disabled', false);
-
   });
 };
 
@@ -187,21 +239,35 @@ ui.showData = function() {
 
 };
 
+
+
 ui.doTrain = function() {
-  d.svc = new elj.MultipleSVM(d.trainSamples, 0.00001);
+  d.svc = new elj.MultipleSVM(d.trainSamples, 0.0001);
 
-  console.log( d.svc.cost());
+  var sgd = new elj.SGD(0.0001);
+  var iterator = 0;
+  var miniBatch = [];
+  var oneBatch = function() {
+    var i;
+    for(i = 0; i < d.svc.x.length/40; i++) {
+      miniBatch[i] = Math.floor( Math.random() * d.svc.x.length );
+    }
+    sgd.batchTrain(d.svc, miniBatch);
 
-  
+    var value = d.svc.cost();
+    svg.append("circle")
+      .attr("class", "dot")
+      .attr("r", 1.0)
+      .attr("cx", xScale(iterator))
+      .attr("cy", yScale(value));
 
-  /*
-  var sgd = new elj.SGD(10, 0.5);
-  sgd.train(d.svc, function(value) {
-      console.log(">>>>>>>>:" + value);
-      return false;
-  });
-  */
+    iterator ++;
+    if ( iterator < 5000 ) {
+      setTimeout( oneBatch, 10);
+    }
+  };
 
+  setTimeout( oneBatch, 10);
 
 };
 

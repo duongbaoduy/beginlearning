@@ -1,5 +1,5 @@
 (function (exports) {
-
+    "use strict";
     var Logistic = function(samples, lambda) {
       this.theta = [];
       this.x = [];
@@ -35,7 +35,7 @@
 
         for(var i = 0; i < this.x.length; i++) {
           var l = this._sigmod( this._linear(this.x[i]) );
-          if ( this.y[i] === 1) { 
+          if ( this.y[i] === 1) {
               sumCost =  sumCost - Math.log(l);
           } else {
               sumCost = sumCost - Math.log( 1 - l);
@@ -62,29 +62,6 @@
             gtheta[j] += this.lambda * this.theta[j];
           }
         }
-
-        return gtheta;
-      }.bind(this);
-
-      this.bGrad = function() {
-        var i,j;
-        var gtheta = [];
-        for(var j = 0; j < this.theta.length; j++) {
-          gtheta.push(0.0);
-        }
-
-        for(i = 0; i < this.x.length; i++) {
-          var l = this._sigmod( this._linear(this.x[i]) );
-
-          for(j = 0; j < this.theta.length; j++) {
-            gtheta[j] += x[i][j] * (l - y[i]) / this.x.length;
-
-            if ( this.lambda !== undefined && j > 0) {
-              gtheta[j] += this.lambda * this.theta[j];
-            }
-          }
-        }
-
         return gtheta;
       }.bind(this);
 
