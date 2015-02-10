@@ -33,6 +33,20 @@
 
 应用于图像的多分类SVM依旧采用的是线性模型，
 
+### 5. 模型的训练
+
+<div class="panel">
+  <div class="btn-toolbar" role="toolbar">
+    <div class="btn-group" role="group">
+      <button type="button" class="btn " id="btnTrain">训练</button>
+    </div>
+  </div>
+  <div class="well" style="margin-top:5px;">
+    <div id="trainingFrame" style="width:512px;height:512px:margin:0px">
+    </div>
+  </div>
+</div>
+
 
 </xmp>
 
@@ -44,6 +58,8 @@
 <script src="vendor/strapdown/strapdown.min.js"></script>
 <script src="js/elj/elj_top.js"></script>
 <script src="js/elj/elj_util.js"></script>
+<script src="js/elj/elj_gd.js"></script>
+<script src="js/elj/elj_multipleSVM.js"></script>
 
 <script type="text/javascript">
 function loadScript(url, doneCallback, errorCallBack) {
@@ -63,13 +79,21 @@ function loadScript(url, doneCallback, errorCallBack) {
 }
 
 var guiInit = function() {
+
+  svg = d3.select("#trainingFrame").append("svg")
+      .attr("width",  512)
+      .attr("height", 512);
+
   $("#btnLoadData").click(ui.onLoadData);
   $("#btnShowData").click(ui.showData);
+  $("#btnTrain").click(ui.doTrain);
 }
 
 var d = {};
 d.trainSamples = elj.util.zeroSamples(32*32*3, 3);
 d.verifySamples = elj.util.zeroSamples(32*32*3, 3);
+d.svc = null;
+
 d.loadSamples = function() {
   for (var i = 0; i < sampleBatch.length; i++) {
     var data = [];
@@ -79,6 +103,8 @@ d.loadSamples = function() {
   }
   delete sampleBatch;
 };
+
+
 d.loadSamples2 = function() {
   for (var i = 0; i < sampleBatch.length; i++) {
     var data = [];
@@ -97,6 +123,7 @@ ui.onLoadData = function() {
   loadScript("./data/cifar_train_1.js", function() {
       console.log("完成数据加载1");
       d.loadSamples();
+      /*
       loadScript("./data/cifar_train_2.js", function() {
           console.log("完成数据加载2");
           d.loadSamples();
@@ -114,13 +141,21 @@ ui.onLoadData = function() {
                           d.loadSamples2();
                           console.log("训练样本数目：" + d.trainSamples.d.length);
                           console.log("测试样本数目：" + d.verifySamples.d.length);
+
                           $("#btnLoadData").html("加载数据完毕！");
+
                           $("#btnShowData").prop('disabled', false);
                       });
                   });
               });
           });
       });
+      */
+
+      $("#btnLoadData").html("加载数据完毕！");
+
+      $("#btnShowData").prop('disabled', false);
+
   });
 };
 
@@ -141,14 +176,32 @@ ui.showData = function() {
       n = Math.floor(Math.random() * d.trainSamples.d.length);
       for(y = 0; y < 32; y++) {
         for(x = 0; x < 32; x++) {
-          rgba.data[(y*32 + x)*4 + 0] = d.trainSamples.d[n][1 + y*32 + x];
-          rgba.data[(y*32 + x)*4 + 1] = d.trainSamples.d[n][1 + 32*32 + y*32 + x];
-          rgba.data[(y*32 + x)*4 + 2] = d.trainSamples.d[n][1 + 32*32*2 + y*32 + x]
+          rgba.data[(y*32 + x)*4 + 0] = d.trainSamples.d[n][2 + y*32 + x];
+          rgba.data[(y*32 + x)*4 + 1] = d.trainSamples.d[n][2 + 32*32 + y*32 + x];
+          rgba.data[(y*32 + x)*4 + 2] = d.trainSamples.d[n][2 + 32*32*2 + y*32 + x]
           rgba.data[(y*32 + x)*4 + 3] = 255;
         }
       }
       context.putImageData(rgba, xx, yy);
   }
+
+};
+
+ui.doTrain = function() {
+  d.svc = new elj.MultipleSVM(d.trainSamples, 0.00001);
+
+  console.log( d.svc.cost());
+
+  
+
+  /*
+  var sgd = new elj.SGD(10, 0.5);
+  sgd.train(d.svc, function(value) {
+      console.log(">>>>>>>>:" + value);
+      return false;
+  });
+  */
+
 
 };
 

@@ -14,12 +14,11 @@
                 for(k = 0; k < model.theta.length; k++) {
                     model.theta[k] +=  -1 * grad[k] * this.step;
                 }
-            }
-
-            targetValue = model.cost();
-            if ( cb !== undefined) {
-                if ( cb(targetValue) === true) {
-                    return;
+                targetValue = model.cost();
+                if ( cb !== undefined) {
+                    if ( cb(targetValue) === true) {
+                        return;
+                    }
                 }
             }
         }

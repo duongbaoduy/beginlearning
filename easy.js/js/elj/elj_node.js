@@ -14,7 +14,7 @@ elj.util = require('./elj_util.js').util;
 elj.Logistic = require('./elj_logistic.js').Logistic;
 elj.SGD = require('./elj_gd.js').SGD;
 elj.SVM = require('./elj_svm.js').SVM;
-elj.EasyNetwork = require('./elj_nn.js').EasyNetwork
+elj.MultipleSVM = require('./elj_multipleSVM.js').MultipleSVM
 
 module.exports = elj;
 
