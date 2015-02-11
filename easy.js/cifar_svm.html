@@ -58,6 +58,9 @@
     <div class="btn-group" role="group">
       <button type="button" class="btn " id="btnTrain">训练</button>
     </div>
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-link" id="btnInline" disabled>正确率:</button>
+    </div>
   </div>
   <div class="well" style="margin-top:5px;">
     <div id="trainingFrame" style="width:512px;height:512px:margin:0px">
@@ -113,7 +116,7 @@ var guiInit = function() {
       .domain([0, 5100]).range([0, 512]);
 
   yScale = d3.scale.linear()
-      .domain([16, 0]).range([0, 512]);
+      .domain([3, -1]).range([0, 512]);
 
 
   var xAxis = d3.svg.axis()
@@ -155,6 +158,9 @@ d.loadSamples = function() {
   for (var i = 0; i < sampleBatch.length; i++) {
     var data = [];
     data.push(sampleBatch[i].label);
+    for(var j = 0; j < sampleBatch[i].data.length; j++) {
+      sampleBatch[i].data[j] = (sampleBatch[i].data[j] - 128) / 128.0;
+    }
     data = data.concat(sampleBatch[i].data);
     d.trainSamples.d.push(data);
   }
@@ -228,9 +234,9 @@ ui.showData = function() {
       n = Math.floor(Math.random() * d.trainSamples.d.length);
       for(y = 0; y < 32; y++) {
         for(x = 0; x < 32; x++) {
-          rgba.data[(y*32 + x)*4 + 0] = d.trainSamples.d[n][2 + y*32 + x];
-          rgba.data[(y*32 + x)*4 + 1] = d.trainSamples.d[n][2 + 32*32 + y*32 + x];
-          rgba.data[(y*32 + x)*4 + 2] = d.trainSamples.d[n][2 + 32*32*2 + y*32 + x]
+          rgba.data[(y*32 + x)*4 + 0] = d.trainSamples.d[n][2 + y*32 + x]  * 128 + 128;
+          rgba.data[(y*32 + x)*4 + 1] = d.trainSamples.d[n][2 + 32*32 + y*32 + x] * 128 + 128;
+          rgba.data[(y*32 + x)*4 + 2] = d.trainSamples.d[n][2 + 32*32*2 + y*32 + x] * 128 + 128;
           rgba.data[(y*32 + x)*4 + 3] = 255;
         }
       }
@@ -244,12 +250,12 @@ ui.showData = function() {
 ui.doTrain = function() {
   d.svc = new elj.MultipleSVM(d.trainSamples, 0.0001);
 
-  var sgd = new elj.SGD(0.0001);
+  var sgd = new elj.SGD(0.5);
   var iterator = 0;
   var miniBatch = [];
   var oneBatch = function() {
     var i;
-    for(i = 0; i < d.svc.x.length/40; i++) {
+    for(i = 0; i < d.svc.x.length/1000; i++) {
       miniBatch[i] = Math.floor( Math.random() * d.svc.x.length );
     }
     sgd.batchTrain(d.svc, miniBatch);
@@ -260,6 +266,20 @@ ui.doTrain = function() {
       .attr("r", 1.0)
       .attr("cx", xScale(iterator))
       .attr("cy", yScale(value));
+
+    console.log(">>>>>>>>:" + value);
+
+    if ( (iterator % 100) == 0) {
+      //做预测
+      var scores = 0;
+      for(i = 0; i < d.verifySamples.d.length; i++) {
+          if ( d.svc.pred(d.verifySamples.d[i]) === d.verifySamples.d[i][0] ) {
+            scores ++;
+          }
+      }
+
+      $("#btnInline").html( "正确率＝" + scores / d.verifySamples.d.length);
+    }
 
     iterator ++;
     if ( iterator < 5000 ) {
