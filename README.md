@@ -13,4 +13,5 @@ Beginlearning
     A CNN pratice project, detecting dogs' face in images.
 
 4.  easy.js
-    A pratices and document for learning based javascript.
+    Pratices and document for learning based on javascript.
+

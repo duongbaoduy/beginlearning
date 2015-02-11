@@ -49,9 +49,17 @@
 
 ### 1.多分类SVM的优化目标函数
 
-应用于图像的多分类SVM依旧采用的是线性模型，
+应用于图像的多分类SVM依旧采用的是线性模型，利用$w^Tx$的输出来进行计算，然后最小化一个多分类的损耗函数。
 
-### 5. 模型的训练
+$$
+L = \frac{1}{N}\sum_{i}\sum_{j \neq y_i}\left[ \max (0, w_j^Tx_i - w_{y_i}^Tx_i + \Delta ) \right] + \frac{1}{2}\lambda W*W
+$$
+
+### 2.利用SGD算法求解最优化
+尽管上述的目标函数是非连续的，但是我们一样可以在数据计算上来逼近连续函数的梯度，因此我们可以利用SGD来进行模型训练。
+
+
+### 3. 模型的训练
 
 <div class="panel">
   <div class="btn-toolbar" role="toolbar">
